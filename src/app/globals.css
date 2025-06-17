@@ -187,7 +187,7 @@ p, span, div, a, button, label {
 
 /* Muted text for secondary content */
 .text-muted {
-  color: hsl(var(--muted-foreground)) !important;
+  color: hsl(var(--muted-foreground));
 }
 
 /* Ensure proper contrast for form elements */
@@ -513,10 +513,10 @@ button:active:not(:disabled) {
 
 /* Hard reset - ensure no red styling on regular text */
 .prose p, .prose span, .prose div, .prose {
-  border-bottom: none !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  color: hsl(var(--foreground)) !important; /* Force black */
+  border-bottom: none;
+  text-decoration: none;
+  box-shadow: none;
+  color: hsl(var(--foreground));
 }
 
 /* Only apply grammar error styles to elements WITH the grammar-error class */
@@ -526,62 +526,62 @@ button:active:not(:disabled) {
   border-radius: 2px;
   transition: background-color 0.2s ease;
   /* Reset any inherited styles first */
-  border-bottom: none !important;
-  text-decoration: none !important;
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  border-bottom: none;
+  text-decoration: none;
+  color: hsl(var(--foreground));
 }
 
 .grammar-error:hover {
   background-color: hsl(var(--error) / 0.08);
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 /* Grammar error types - with BLACK text */
 .grammar-error.grammar-error-grammar {
-  border-bottom: 2px solid hsl(var(--error)) !important;
+  border-bottom: 2px solid hsl(var(--error));
   text-decoration: underline;
   text-decoration-color: hsl(var(--error));
   text-decoration-style: wavy;
   text-underline-offset: 2px;
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 .grammar-error.grammar-error-spelling {
-  border-bottom: 2px solid hsl(var(--error)) !important;
+  border-bottom: 2px solid hsl(var(--error));
   text-decoration: underline;
   text-decoration-color: hsl(var(--error));
   text-decoration-style: solid;
   text-underline-offset: 2px;
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 .grammar-error.grammar-error-style {
-  border-bottom: 2px solid hsl(var(--error)) !important;
+  border-bottom: 2px solid hsl(var(--error));
   text-decoration: underline;
   text-decoration-color: hsl(var(--error));
   text-decoration-style: dotted;
   text-underline-offset: 2px;
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 /* Error severity levels - with BLACK text */
 .grammar-error.grammar-error-error {
-  border-bottom-color: hsl(var(--error)) !important;
+  border-bottom-color: hsl(var(--error));
   text-decoration-color: hsl(var(--error));
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 .grammar-error.grammar-error-warning {
-  border-bottom-color: hsl(var(--error)) !important; /* Use red instead of yellow */
+  border-bottom-color: hsl(var(--error)); /* Use red instead of yellow */
   text-decoration-color: hsl(var(--error));
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 .grammar-error.grammar-error-suggestion {
-  border-bottom-color: hsl(var(--primary)) !important;
+  border-bottom-color: hsl(var(--primary));
   text-decoration-color: hsl(var(--primary));
   opacity: 0.8;
-  color: hsl(var(--foreground)) !important; /* Force black text */
+  color: hsl(var(--foreground));
 }
 
 /* Clean tooltip styles */
@@ -592,7 +592,7 @@ button:active:not(:disabled) {
   left: 50%;
   transform: translateX(-50%);
   background: hsl(var(--popover));
-  color: hsl(var(--popover-foreground)) !important; /* Force black text */
+  color: hsl(var(--popover-foreground));
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 12px;
@@ -621,12 +621,8 @@ button:active:not(:disabled) {
   background-color: hsl(var(--error) / 0.12);
 }
 
-/* Dark mode text override */
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6, 
-.dark p, .dark span, .dark div, .dark a, .dark button, 
-.dark input, .dark textarea, .dark label {
-  color: hsl(var(--foreground)) !important; /* White text in dark mode */
-}
+/* Dark mode text override - REMOVED to allow Tailwind classes to work */
+/* The individual components now handle their own text colors with explicit Tailwind classes */
 
 /* Animation for error highlighting */
 @keyframes grammar-error-pulse {

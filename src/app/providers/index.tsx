@@ -38,7 +38,7 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="light"
       enableSystem
       disableTransitionOnChange
     >
