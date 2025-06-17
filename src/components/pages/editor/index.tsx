@@ -74,9 +74,112 @@ export const EditorPage: React.FC = () => {
   const handleAcceptSuggestion = (errorId: string, suggestion: string) => {
     console.log('🔧 Accepting suggestion:', { errorId, suggestion, currentErrors: grammarErrors.length });
     
-    // For now, just dismiss the error
-    // TODO: In the future, apply the suggestion to the document content
-    dismissError(errorId);
+    // Find the error to get its position information
+    const error = grammarErrors.find(e => e.id === errorId);
+    if (!error) {
+      console.warn('🔧 Error not found for suggestion application:', errorId);
+      return;
+    }
+
+    console.log('🔧 Found error for suggestion:', {
+      errorId,
+      position: error.position,
+      suggestion,
+      contextText: error.context.text
+    });
+
+    try {
+      // Get the current HTML content and plain text content
+      const currentHtmlContent = content;
+      const currentPlainText = currentHtmlContent.replace(/<[^>]*>/g, '');
+      
+      console.log('🔧 Content analysis:', {
+        htmlLength: currentHtmlContent.length,
+        plainTextLength: currentPlainText.length,
+        errorStart: error.position.start,
+        errorEnd: error.position.end
+      });
+
+      // Extract the original error text that needs to be replaced
+      const originalErrorText = currentPlainText.substring(error.position.start, error.position.end);
+      
+      console.log('🔧 Text to replace:', {
+        original: originalErrorText,
+        suggestion: suggestion,
+        contextBefore: currentPlainText.substring(Math.max(0, error.position.start - 10), error.position.start),
+        contextAfter: currentPlainText.substring(error.position.end, error.position.end + 10)
+      });
+
+      // Verify the original text matches what we expect from the error context
+      if (originalErrorText.trim() !== error.context.text.substring(error.context.highlightStart, error.context.highlightEnd).trim()) {
+        console.warn('🔧 Text mismatch detected, using context-based replacement');
+        
+        // Fallback: Find the error text within the current content
+        const errorTextFromContext = error.context.text.substring(error.context.highlightStart, error.context.highlightEnd);
+        const searchIndex = currentPlainText.indexOf(errorTextFromContext);
+        
+        if (searchIndex === -1) {
+          console.error('🔧 Could not locate error text in current content');
+          dismissError(errorId);
+          return;
+        }
+        
+        // Update positions to match found text
+        error.position.start = searchIndex;
+        error.position.end = searchIndex + errorTextFromContext.length;
+      }
+
+      // Create the new plain text content with the suggestion applied
+      const beforeError = currentPlainText.substring(0, error.position.start);
+      const afterError = currentPlainText.substring(error.position.end);
+      const newPlainText = beforeError + suggestion + afterError;
+
+      console.log('🔧 Applying text replacement:', {
+        beforeLength: beforeError.length,
+        originalLength: originalErrorText.length,
+        suggestionLength: suggestion.length,
+        afterLength: afterError.length,
+        totalOldLength: currentPlainText.length,
+        totalNewLength: newPlainText.length
+      });
+
+      // If the content is plain text (no HTML tags), use the new plain text directly
+      const hasHtml = /<[^>]*>/.test(currentHtmlContent);
+      
+      if (!hasHtml) {
+        // Content is plain text, use direct replacement
+        updateContent(newPlainText);
+      } else {
+        // Content has HTML, we need to preserve formatting
+        // For now, we'll use a simple approach - in a production app, 
+        // you'd want more sophisticated HTML-aware text replacement
+        console.log('🔧 HTML content detected, using simplified replacement');
+        
+        // Try to find and replace the error text in the HTML content
+        const htmlWithReplacement = currentHtmlContent.replace(
+          originalErrorText,
+          suggestion
+        );
+        
+        if (htmlWithReplacement !== currentHtmlContent) {
+          updateContent(htmlWithReplacement);
+        } else {
+          // Fallback to plain text replacement
+          console.log('🔧 HTML replacement failed, falling back to plain text');
+          updateContent(newPlainText);
+        }
+      }
+
+      // Dismiss the error after successful replacement
+      dismissError(errorId);
+
+      console.log('🔧 Successfully applied suggestion and dismissed error');
+      
+    } catch (err) {
+      console.error('🔧 Error applying suggestion:', err);
+      // Still dismiss the error even if replacement fails to prevent UI confusion
+      dismissError(errorId);
+    }
   };
 
   const handleDismissError = (errorId: string) => {
