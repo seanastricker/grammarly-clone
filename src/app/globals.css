@@ -16,72 +16,72 @@
 
 :root {
   /* Modern Web App Color Scheme - Clean & Professional */
-  --background: 255 255 255; /* Pure white background */
-  --foreground: 15 23 42; /* Slate-900 - Dark text for excellent readability */
+  --background: 0 0% 100%; /* Pure white background */
+  --foreground: 222 84% 5%; /* Slate-900 - Dark text for excellent readability */
   
-  --card: 255 255 255; /* White cards */
-  --card-foreground: 15 23 42; /* Dark text on cards */
+  --card: 0 0% 100%; /* White cards */
+  --card-foreground: 222 84% 5%; /* Dark text on cards */
   
-  --popover: 255 255 255; /* White popover */
-  --popover-foreground: 15 23 42; /* Dark text */
+  --popover: 0 0% 100%; /* White popover */
+  --popover-foreground: 222 84% 5%; /* Dark text */
   
   /* Primary Brand Colors - Professional Blue */
-  --primary: 59 130 246; /* Blue-500 - Modern, professional primary */
-  --primary-foreground: 255 255 255; /* White text on primary */
-  --primary-container: 239 246 255; /* Blue-50 - Very light blue background */
-  --primary-container-foreground: 30 64 175; /* Blue-800 - Dark blue text */
+  --primary: 221 83% 53%; /* Blue-500 - Modern, professional primary */
+  --primary-foreground: 0 0% 100%; /* White text on primary */
+  --primary-container: 214 100% 97%; /* Blue-50 - Very light blue background */
+  --primary-container-foreground: 213 94% 68%; /* Blue-800 - Dark blue text */
   
   /* Secondary Colors - Clean Gray Scale */
-  --secondary: 71 85 105; /* Slate-600 - Medium gray */
-  --secondary-foreground: 255 255 255; /* White text on secondary */
-  --secondary-container: 248 250 252; /* Slate-50 - Very light gray */
-  --secondary-container-foreground: 30 41 59; /* Slate-800 - Dark gray text */
+  --secondary: 215 25% 27%; /* Slate-600 - Medium gray */
+  --secondary-foreground: 0 0% 100%; /* White text on secondary */
+  --secondary-container: 210 40% 98%; /* Slate-50 - Very light gray */
+  --secondary-container-foreground: 217 33% 17%; /* Slate-800 - Dark gray text */
   
   /* Tertiary Colors - Subtle Accent */
-  --tertiary: 99 102 241; /* Indigo-500 - Subtle accent color */
-  --tertiary-foreground: 255 255 255; /* White text on tertiary */
-  --tertiary-container: 238 242 255; /* Indigo-50 - Light indigo background */
-  --tertiary-container-foreground: 67 56 202; /* Indigo-700 - Dark indigo text */
+  --tertiary: 239 84% 67%; /* Indigo-500 - Subtle accent color */
+  --tertiary-foreground: 0 0% 100%; /* White text on tertiary */
+  --tertiary-container: 238 100% 97%; /* Indigo-50 - Light indigo background */
+  --tertiary-container-foreground: 245 58% 51%; /* Indigo-700 - Dark indigo text */
   
   /* Surface Colors */
-  --surface: 255 255 255; /* White surface */
-  --surface-foreground: 15 23 42; /* Dark text on surface */
-  --surface-variant: 241 245 249; /* Slate-100 - Light gray surface */
-  --surface-variant-foreground: 51 65 85; /* Slate-700 - Medium dark text */
+  --surface: 0 0% 100%; /* White surface */
+  --surface-foreground: 222 84% 5%; /* Dark text on surface */
+  --surface-variant: 210 40% 96%; /* Slate-100 - Light gray surface */
+  --surface-variant-foreground: 215 25% 27%; /* Slate-700 - Medium dark text */
   
   /* Border Colors */
-  --outline: 203 213 225; /* Slate-300 - Light borders */
-  --outline-variant: 226 232 240; /* Slate-200 - Very light borders */
+  --outline: 215 20% 65%; /* Slate-300 - Light borders */
+  --outline-variant: 220 13% 91%; /* Slate-200 - Very light borders */
   
   /* Status Colors - Professional & Clear */
-  --error: 220 38 38; /* Red-600 - Clear error red */
-  --error-foreground: 255 255 255; /* White text on error */
-  --error-container: 254 242 242; /* Red-50 - Light red background */
-  --error-container-foreground: 153 27 27; /* Red-800 - Dark red text */
+  --error: 0 84% 60%; /* Red-600 - Clear error red */
+  --error-foreground: 0 0% 100%; /* White text on error */
+  --error-container: 0 100% 97%; /* Red-50 - Light red background */
+  --error-container-foreground: 0 74% 42%; /* Red-800 - Dark red text */
   
-  --warning: 217 119 6; /* Amber-600 - Professional warning orange */
-  --warning-foreground: 255 255 255; /* White text on warning */
-  --warning-container: 255 251 235; /* Amber-50 - Light amber background */
-  --warning-container-foreground: 146 64 14; /* Amber-800 - Dark amber text */
+  --warning: 32 95% 44%; /* Amber-600 - Professional warning orange */
+  --warning-foreground: 0 0% 100%; /* White text on warning */
+  --warning-container: 48 100% 96%; /* Amber-50 - Light amber background */
+  --warning-container-foreground: 30 70% 32%; /* Amber-800 - Dark amber text */
   
-  --success: 22 163 74; /* Green-600 - Success green */
-  --success-foreground: 255 255 255; /* White text on success */
-  --success-container: 240 253 244; /* Green-50 - Light green background */
-  --success-container-foreground: 22 101 52; /* Green-800 - Dark green text */
+  --success: 142 76% 36%; /* Green-600 - Success green */
+  --success-foreground: 0 0% 100%; /* White text on success */
+  --success-container: 138 76% 97%; /* Green-50 - Light green background */
+  --success-container-foreground: 140 84% 39%; /* Green-800 - Dark green text */
   
   /* UI Element Colors */
-  --muted: 248 250 252; /* Slate-50 - Muted background */
-  --muted-foreground: 100 116 139; /* Slate-500 - Muted text */
+  --muted: 210 40% 98%; /* Slate-50 - Muted background */
+  --muted-foreground: 215 16% 47%; /* Slate-500 - Muted text */
   
-  --accent: 99 102 241; /* Indigo-500 - Accent color */
-  --accent-foreground: 255 255 255; /* White text on accent */
+  --accent: 239 84% 67%; /* Indigo-500 - Accent color */
+  --accent-foreground: 0 0% 100%; /* White text on accent */
   
-  --destructive: 220 38 38; /* Red-600 - Destructive actions */
-  --destructive-foreground: 255 255 255; /* White text on destructive */
+  --destructive: 0 84% 60%; /* Red-600 - Destructive actions */
+  --destructive-foreground: 0 0% 100%; /* White text on destructive */
   
-  --border: 226 232 240; /* Slate-200 - Standard borders */
-  --input: 255 255 255; /* White input backgrounds */
-  --ring: 59 130 246; /* Blue-500 - Focus ring color */
+  --border: 220 13% 91%; /* Slate-200 - Standard borders */
+  --input: 0 0% 100%; /* White input backgrounds */
+  --ring: 221 83% 53%; /* Blue-500 - Focus ring color */
   
   /* Shadow Variables */
   --shadow: 15 23 42; /* Dark shadow base */
