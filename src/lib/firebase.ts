@@ -13,17 +13,38 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
 /**
- * Firebase project configuration
+ * Firebase project configuration from environment variables
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyCD1duhWt84Fc-mWugAr_fsn1M__PZuRpk",
-  authDomain: "grammarly-clone-b9b49.firebaseapp.com",
-  projectId: "grammarly-clone-b9b49",
-  storageBucket: "grammarly-clone-b9b49.firebasestorage.app",
-  messagingSenderId: "225332392518",
-  appId: "1:225332392518:web:7af3aa0709991b75fc1047",
-  measurementId: "G-HF90YLQJ18"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
+
+// Validate required environment variables
+const requiredEnvVars = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID'
+];
+
+const missingEnvVars = requiredEnvVars.filter(
+  varName => !import.meta.env[varName]
+);
+
+if (missingEnvVars.length > 0) {
+  throw new Error(
+    `Missing required environment variables: ${missingEnvVars.join(', ')}\n` +
+    'Please create a .env file with your Firebase configuration.'
+  );
+}
 
 /**
  * Initialize Firebase app

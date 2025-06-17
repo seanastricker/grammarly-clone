@@ -145,6 +145,17 @@ export interface RegisterCredentials {
 }
 
 /**
+ * Registration form validation errors
+ */
+export interface RegisterErrors {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  displayName?: string;
+  acceptTerms?: string;
+}
+
+/**
  * Password reset form data
  */
 export interface PasswordResetRequest {
