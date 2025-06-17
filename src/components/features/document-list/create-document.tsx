@@ -208,18 +208,18 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
       className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
       onClick={handleBackdropClick}
     >
-      <div className="bg-background border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <h2 className="text-xl font-semibold text-slate-900">
             Create New Document
           </h2>
           <button
             onClick={handleClose}
             disabled={isCreating}
-            className="p-2 rounded-md hover:bg-muted transition-colors disabled:opacity-50"
+            className="p-2 rounded-md hover:bg-slate-50 transition-colors disabled:opacity-50"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-slate-600" />
           </button>
         </div>
 
@@ -227,7 +227,7 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block text-sm font-medium text-slate-900 mb-2">
               Document Title *
             </label>
             <input
@@ -236,20 +236,20 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Enter document title..."
               className={cn(
-                'w-full px-3 py-2 border rounded-md bg-background text-foreground',
-                'placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
-                errors.title ? 'border-destructive' : 'border-border'
+                'w-full px-3 py-2 border rounded-md bg-white text-slate-900',
+                'placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent',
+                errors.title ? 'border-red-300' : 'border-slate-200'
               )}
               disabled={isCreating}
             />
             {errors.title && (
-              <p className="text-sm text-destructive mt-1">{errors.title}</p>
+              <p className="text-sm text-red-600 mt-1">{errors.title}</p>
             )}
           </div>
 
           {/* Document Type */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-3">
+            <label className="block text-sm font-medium text-slate-900 mb-3">
               Document Type
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -259,8 +259,8 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
                   className={cn(
                     'flex items-start space-x-3 p-3 border rounded-md cursor-pointer transition-colors',
                     formData.type === typeOption.type
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted/50',
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-slate-200 hover:bg-slate-50',
                     isCreating && 'pointer-events-none opacity-50'
                   )}
                 >
@@ -273,17 +273,17 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
                       ...prev, 
                       type: e.target.value as DocumentType 
                     }))}
-                    className="mt-1"
+                    className="mt-1 text-blue-600 focus:ring-blue-600"
                     disabled={isCreating}
                   />
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <span className="text-lg">{typeOption.icon}</span>
-                      <span className="font-medium text-foreground">
+                      <span className="font-medium text-slate-900">
                         {typeOption.label}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-600 mt-1">
                       {typeOption.description}
                     </p>
                   </div>
@@ -294,7 +294,7 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block text-sm font-medium text-slate-900 mb-2">
               Description (Optional)
             </label>
             <textarea
@@ -303,23 +303,23 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
               placeholder="Brief description of what this document is about..."
               rows={3}
               className={cn(
-                'w-full px-3 py-2 border rounded-md bg-background text-foreground resize-none',
-                'placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
-                errors.description ? 'border-destructive' : 'border-border'
+                'w-full px-3 py-2 border rounded-md bg-white text-slate-900 resize-none',
+                'placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent',
+                errors.description ? 'border-red-300' : 'border-slate-200'
               )}
               disabled={isCreating}
             />
             {errors.description && (
-              <p className="text-sm text-destructive mt-1">{errors.description}</p>
+              <p className="text-sm text-red-600 mt-1">{errors.description}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               {formData.description.length}/500 characters
             </p>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block text-sm font-medium text-slate-900 mb-2">
               Tags (Optional)
             </label>
             <input
@@ -327,10 +327,10 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
               value={formData.tags}
               onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
               placeholder="Enter tags separated by commas..."
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-200 rounded-md bg-white text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               disabled={isCreating}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Example: research, important, draft
             </p>
           </div>
@@ -341,14 +341,14 @@ export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
               type="button"
               onClick={handleClose}
               disabled={isCreating}
-              className="px-4 py-2 border border-border rounded-md text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              className="px-4 py-2 border border-slate-200 rounded-md text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isCreating || !formData.title.trim()}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {isCreating ? (
                 <>
