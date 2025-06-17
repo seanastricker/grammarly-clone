@@ -16,7 +16,6 @@
     
     <!-- Icons and Manifest -->
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
     
     <!-- Preconnect to external services -->
@@ -48,7 +47,6 @@
     
     <!-- Security headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
     
     <!-- Loading performance -->
@@ -106,6 +104,7 @@
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- Service worker registration (future implementation) -->
+    <!--
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -119,5 +118,6 @@
         });
       }
     </script>
+    -->
   </body>
 </html> 

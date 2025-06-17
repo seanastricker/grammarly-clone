@@ -37,7 +37,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       FallbackComponent={ErrorFallback}
       onError={handleError}
     >
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Providers>
           <App />
         </Providers>

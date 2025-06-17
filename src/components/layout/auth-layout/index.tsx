@@ -8,6 +8,8 @@
  */
 
 import React from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { LogOut, User } from 'lucide-react';
 
 /**
  * Props for AuthLayout component
@@ -26,6 +28,17 @@ interface AuthLayoutProps {
  * @param children - Child components to render within the layout
  */
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Navigation will be handled automatically by ProtectedRoute
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Auth header/navigation */}
@@ -59,11 +72,24 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 
           {/* User menu */}
           <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground text-sm font-medium">
-                U
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <span className="text-sm font-medium text-foreground">
+                {user?.displayName || user?.email || 'User'}
               </span>
             </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-1 px-3 py-2 text-sm 
+                         text-muted-foreground hover:text-foreground 
+                         hover:bg-muted rounded-md transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </header>

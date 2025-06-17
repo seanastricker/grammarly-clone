@@ -17,6 +17,7 @@ import type {
   ProfileUpdateData,
   OAuthProvider 
 } from '@/types/auth';
+import * as authService from '@/services/auth';
 
 /**
  * Initial authentication state
@@ -62,33 +63,76 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Initialize authentication state
-   * TODO: Implement Firebase auth state listener
+   * Set up Firebase auth state listener
    */
   useEffect(() => {
-    // Simulate initial auth check
-    const timer = setTimeout(() => {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-      }));
-    }, 1000);
+    const unsubscribe = authService.onAuthStateChange(async (firebaseUser) => {
+      setAuthState(prev => ({ ...prev, isLoading: true }));
 
-    return () => clearTimeout(timer);
+      if (firebaseUser) {
+        try {
+          // Get user profile from Firestore
+          const userProfile = await authService.getUserProfile(firebaseUser.uid);
+          
+          if (userProfile) {
+            setAuthState({
+              user: userProfile,
+              firebaseUser,
+              isLoading: false,
+              error: null,
+              isEmailVerified: firebaseUser.emailVerified
+            });
+          } else {
+            // User exists in Auth but not in Firestore, create profile
+            const newProfile = await authService.createUserProfile(firebaseUser);
+            setAuthState({
+              user: newProfile,
+              firebaseUser,
+              isLoading: false,
+              error: null,
+              isEmailVerified: firebaseUser.emailVerified
+            });
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+          setAuthState({
+            user: null,
+            firebaseUser: null,
+            isLoading: false,
+            error: 'Failed to load user profile',
+            isEmailVerified: false
+          });
+        }
+      } else {
+        setAuthState({
+          user: null,
+          firebaseUser: null,
+          isLoading: false,
+          error: null,
+          isEmailVerified: false
+        });
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   /**
    * Sign in with email and password
-   * TODO: Implement Firebase authentication
    */
   const signIn = async (credentials: LoginCredentials): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // TODO: Implement Firebase signInWithEmailAndPassword
-      console.log('Sign in:', credentials);
+      const { user, firebaseUser } = await authService.signInWithEmail(credentials);
       
-      // Simulate sign in for now
-      throw new Error('Authentication not yet implemented');
+      setAuthState({
+        user,
+        firebaseUser,
+        isLoading: false,
+        error: null,
+        isEmailVerified: firebaseUser.emailVerified
+      });
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -101,17 +145,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Sign up with email and password
-   * TODO: Implement Firebase authentication
    */
   const signUp = async (credentials: RegisterCredentials): Promise<void> => {
+    console.log('📝 Auth Provider: Starting signup for:', credentials.email);
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // TODO: Implement Firebase createUserWithEmailAndPassword
-      console.log('Sign up:', credentials);
+      const { user, firebaseUser } = await authService.signUpWithEmail(credentials);
+      console.log('✅ Auth Provider: Signup successful for:', user.email);
       
-      // Simulate sign up for now
-      throw new Error('Registration not yet implemented');
+      setAuthState({
+        user,
+        firebaseUser,
+        isLoading: false,
+        error: null,
+        isEmailVerified: firebaseUser.emailVerified
+      });
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -124,17 +173,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Sign in with OAuth provider
-   * TODO: Implement Firebase OAuth authentication
    */
   const signInWithOAuth = async (provider: OAuthProvider): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // TODO: Implement Firebase OAuth sign in
-      console.log('OAuth sign in:', provider);
+      const { user, firebaseUser } = await authService.signInWithOAuth(provider);
       
-      // Simulate OAuth for now
-      throw new Error('OAuth not yet implemented');
+      setAuthState({
+        user,
+        firebaseUser,
+        isLoading: false,
+        error: null,
+        isEmailVerified: firebaseUser.emailVerified
+      });
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -147,14 +199,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Sign out current user
-   * TODO: Implement Firebase sign out
    */
   const signOut = async (): Promise<void> => {
     try {
-      // TODO: Implement Firebase signOut
-      console.log('Sign out');
-      
-      setAuthState(initialAuthState);
+      await authService.signOut();
+      // Auth state will be updated by the onAuthStateChanged listener
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -166,15 +215,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Send password reset email
-   * TODO: Implement Firebase password reset
    */
   const resetPassword = async (request: PasswordResetRequest): Promise<void> => {
     try {
-      // TODO: Implement Firebase sendPasswordResetEmail
-      console.log('Password reset:', request);
-      
-      // Simulate password reset for now
-      throw new Error('Password reset not yet implemented');
+      await authService.resetPassword(request);
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -186,15 +230,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Send email verification
-   * TODO: Implement Firebase email verification
    */
   const sendEmailVerification = async (): Promise<void> => {
     try {
-      // TODO: Implement Firebase sendEmailVerification
-      console.log('Send email verification');
-      
-      // Simulate email verification for now
-      throw new Error('Email verification not yet implemented');
+      await authService.sendVerificationEmail();
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -206,15 +245,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Update user profile
-   * TODO: Implement Firebase profile update
    */
   const updateProfile = async (data: ProfileUpdateData): Promise<void> => {
     try {
-      // TODO: Implement Firebase profile update
-      console.log('Update profile:', data);
+      const updatedUser = await authService.updateUserProfile(data);
       
-      // Simulate profile update for now
-      throw new Error('Profile update not yet implemented');
+      setAuthState(prev => ({
+        ...prev,
+        user: updatedUser,
+      }));
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
@@ -226,15 +265,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Refresh authentication state
-   * TODO: Implement Firebase auth state refresh
    */
   const refreshAuth = async (): Promise<void> => {
     try {
-      // TODO: Implement Firebase auth state refresh
-      console.log('Refresh auth');
+      const currentUser = authService.getCurrentUser();
       
-      // Simulate refresh for now
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+      if (currentUser) {
+        const userProfile = await authService.getUserProfile(currentUser.uid);
+        
+        if (userProfile) {
+          setAuthState(prev => ({
+            ...prev,
+            user: userProfile,
+            firebaseUser: currentUser,
+            isEmailVerified: currentUser.emailVerified,
+            isLoading: false
+          }));
+        }
+      } else {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
+      }
     } catch (error) {
       setAuthState(prev => ({
         ...prev,

@@ -33,7 +33,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>; // TODO: Replace with proper loading component
   }
 
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+  return user ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 /**
