@@ -41,7 +41,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   className
 }) => {
   const { user } = useAuth();
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [allDocuments, setAllDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -65,7 +65,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
     try {
       const filters: DocumentFilters = {};
-      if (searchQuery) filters.searchQuery = searchQuery;
       if (typeFilter) filters.type = typeFilter;
       if (privacyFilter) filters.privacy = privacyFilter;
 
@@ -75,7 +74,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         limit: 50 // Load more for better UX
       });
 
-      setDocuments(response.documents);
+      setAllDocuments(response.documents);
     } catch (err) {
       console.error('Error loading documents:', err);
       setError('Failed to load documents');
@@ -85,11 +84,65 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   };
 
   /**
-   * Effect to load documents when user or filters change
+   * Filter and sort documents client-side
+   */
+  const filteredDocuments = React.useMemo(() => {
+    let filtered = [...allDocuments];
+
+    // Client-side search filtering
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(doc => 
+        doc.title.toLowerCase().includes(query) ||
+        doc.description?.toLowerCase().includes(query) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // Client-side sorting (since we removed it from Firebase query)
+    filtered.sort((a, b) => {
+      const { field, direction } = sortBy;
+      let aValue: any, bValue: any;
+
+      switch (field) {
+        case 'title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        case 'updatedAt':
+          aValue = new Date(a.updatedAt).getTime();
+          bValue = new Date(b.updatedAt).getTime();
+          break;
+        case 'wordCount':
+          aValue = a.stats.wordCount;
+          bValue = b.stats.wordCount;
+          break;
+        default:
+          aValue = new Date(a.updatedAt).getTime();
+          bValue = new Date(b.updatedAt).getTime();
+      }
+
+      if (direction === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [allDocuments, searchQuery, sortBy]);
+
+  /**
+   * Effect to load documents when user or server-side filters change
+   * NOTE: searchQuery removed to prevent focus loss
    */
   useEffect(() => {
     loadDocuments();
-  }, [user, searchQuery, typeFilter, privacyFilter, sortBy]);
+  }, [user, typeFilter, privacyFilter, sortBy]);
 
   /**
    * Handle document deletion
@@ -104,7 +157,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     try {
       await documentService.deleteDocument(documentId, user.id);
       // Remove from local state
-      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setAllDocuments(prev => prev.filter(doc => doc.id !== documentId));
     } catch (err) {
       console.error('Error deleting document:', err);
       alert('Failed to delete document');
@@ -124,7 +177,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         `${document.title} (Copy)`
       );
       // Add to local state
-      setDocuments(prev => [duplicatedDoc, ...prev]);
+      setAllDocuments(prev => [duplicatedDoc, ...prev]);
     } catch (err) {
       console.error('Error duplicating document:', err);
       alert('Failed to duplicate document');
@@ -178,7 +231,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         <div>
           <h2 className="text-2xl font-bold text-foreground">Your Documents</h2>
           <p className="text-muted-foreground">
-            {documents.length} document{documents.length !== 1 ? 's' : ''}
+            {filteredDocuments.length} of {allDocuments.length} document{allDocuments.length !== 1 ? 's' : ''}
+            {searchQuery && ` matching "${searchQuery}"`}
           </p>
         </div>
         
@@ -256,9 +310,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       </div>
 
       {/* Document Grid */}
-      {documents.length > 0 ? (
+      {filteredDocuments.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documents.map((document) => (
+          {filteredDocuments.map((document) => (
             <DocumentCard
               key={document.id}
               document={document}
@@ -276,14 +330,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               <Plus className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">
-              No documents found
+              {allDocuments.length === 0 ? 'No documents yet' : 'No documents found'}
             </h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery || typeFilter || privacyFilter
-                ? 'Try adjusting your filters or search terms.'
-                : 'Get started by creating your first document.'}
+              {allDocuments.length === 0
+                ? 'Get started by creating your first document.'
+                : 'Try adjusting your search terms or filters.'}
             </p>
-            {onCreateNew && !searchQuery && !typeFilter && !privacyFilter && (
+            {onCreateNew && allDocuments.length === 0 && (
               <button
                 onClick={onCreateNew}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"

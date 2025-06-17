@@ -19,7 +19,9 @@ import {
   deleteDoc,
   query,
   where,
-  limit as firestoreLimit,
+  orderBy,
+  limit,
+  Timestamp,
   serverTimestamp,
   QueryDocumentSnapshot,
   DocumentData
@@ -29,9 +31,13 @@ import type {
   Document,
   CreateDocumentData,
   UpdateDocumentData,
+  DocumentFilters,
+  DocumentSortOptions,
   DocumentQueryOptions,
   DocumentListResponse,
   RecentDocument,
+  DocumentPrivacy,
+  DocumentStatus,
   DocumentStats,
   DocumentSuggestions
 } from '@/types/document';
@@ -74,12 +80,20 @@ function convertFirestoreDocument(docSnap: QueryDocumentSnapshot<DocumentData>):
     tags: data.tags || [],
     stats: {
       ...data.stats,
-      lastEditedAt: data.stats?.lastEditedAt?.toDate() || new Date()
+      lastEditedAt: data.stats?.lastEditedAt instanceof Timestamp 
+        ? data.stats.lastEditedAt.toDate() 
+        : new Date(data.stats?.lastEditedAt || Date.now())
     },
     suggestions: data.suggestions,
-    createdAt: data.createdAt?.toDate() || new Date(),
-    updatedAt: data.updatedAt?.toDate() || new Date(),
-    lastAccessedAt: data.lastAccessedAt?.toDate() || new Date(),
+    createdAt: data.createdAt instanceof Timestamp 
+      ? data.createdAt.toDate() 
+      : new Date(data.createdAt),
+    updatedAt: data.updatedAt instanceof Timestamp 
+      ? data.updatedAt.toDate() 
+      : new Date(data.updatedAt),
+    lastAccessedAt: data.lastAccessedAt instanceof Timestamp 
+      ? data.lastAccessedAt.toDate() 
+      : new Date(data.lastAccessedAt),
     sharedWith: data.sharedWith,
     collaborators: data.collaborators,
     version: data.version || 1,
@@ -121,83 +135,114 @@ export function calculateTextStats(content: string): Partial<DocumentStats> {
 /**
  * Create a new document
  */
-export async function createDocument(
+export const createDocument = async (
   userId: string,
-  documentData: CreateDocumentData
-): Promise<Document> {
+  data: CreateDocumentData
+): Promise<Document> => {
+  const now = new Date();
+  const defaultStats: DocumentStats = {
+    wordCount: 0,
+    characterCount: 0,
+    characterCountNoSpaces: 0,
+    paragraphCount: 1,
+    sentenceCount: 0,
+    readingTime: 0,
+    lastEditedAt: now
+  };
+
+  const documentData = {
+    title: data.title,
+    type: data.type || 'other',
+    content: data.content || '',
+    description: data.description || '',
+    tags: data.tags || [],
+    userId,
+    privacy: (data.privacy || 'private') as DocumentPrivacy,
+    status: 'draft' as DocumentStatus,
+    stats: defaultStats,
+    createdAt: now,
+    updatedAt: now,
+    lastAccessedAt: now,
+    version: 1,
+    isAutoSaveEnabled: true
+  };
+
   try {
-    const now = new Date();
-    const stats = {
-      ...defaultStats,
-      ...calculateTextStats(documentData.content || ''),
-      lastEditedAt: now
-    };
-
-    const docData = {
-      title: documentData.title,
-      content: documentData.content || '',
-      userId,
-      type: documentData.type || 'other',
-      privacy: documentData.privacy || 'private',
-      status: 'draft',
-      description: documentData.description || '',
-      tags: documentData.tags || [],
-      stats,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      lastAccessedAt: serverTimestamp(),
-      version: 1,
-      isAutoSaveEnabled: true
-    };
-
-    const docRef = await addDoc(collection(db, COLLECTIONS.DOCUMENTS), docData);
+    const docRef = await addDoc(collection(db, 'documents'), documentData);
     
-    // Return the created document
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) {
-      throw new Error('Failed to retrieve created document');
-    }
-
-    return convertFirestoreDocument(docSnap as QueryDocumentSnapshot<DocumentData>);
+    const newDocument: Document = {
+      id: docRef.id,
+      ...documentData
+    };
+    
+    return newDocument;
   } catch (error) {
     console.error('Error creating document:', error);
-    throw new Error('Failed to create document');
+    throw error;
   }
-}
+};
 
 /**
- * Get a document by ID
+ * Get a single document by ID
  */
-export async function getDocument(documentId: string, userId: string): Promise<Document | null> {
+export const getDocument = async (
+  documentId: string,
+  userId: string
+): Promise<Document | null> => {
   try {
-    const docRef = doc(db, COLLECTIONS.DOCUMENTS, documentId);
+    const docRef = doc(db, 'documents', documentId);
     const docSnap = await getDoc(docRef);
-
+    
     if (!docSnap.exists()) {
       return null;
     }
 
-    const document = convertFirestoreDocument(docSnap as QueryDocumentSnapshot<DocumentData>);
+    const data = docSnap.data();
     
-    // Check if user has access to this document
-    if (document.userId !== userId && 
-        !document.sharedWith?.includes(userId) && 
-        !document.collaborators?.includes(userId) &&
-        document.privacy !== 'public') {
-      throw new Error('Access denied');
+    // Check if user has access
+    if (data.userId !== userId) {
+      return null;
     }
 
-    // Update last accessed time
-    await updateDoc(docRef, {
-      lastAccessedAt: serverTimestamp()
-    });
-
+    // Convert Firestore Timestamps to Dates
+    const document: Document = {
+      id: docSnap.id,
+      title: data.title,
+      content: data.content,
+      userId: data.userId,
+      type: data.type,
+      privacy: data.privacy,
+      status: data.status,
+      description: data.description,
+      tags: data.tags,
+      stats: {
+        ...data.stats,
+        lastEditedAt: data.stats?.lastEditedAt instanceof Timestamp 
+          ? data.stats.lastEditedAt.toDate() 
+          : new Date(data.stats?.lastEditedAt || Date.now())
+      },
+      createdAt: data.createdAt instanceof Timestamp 
+        ? data.createdAt.toDate() 
+        : new Date(data.createdAt),
+      updatedAt: data.updatedAt instanceof Timestamp 
+        ? data.updatedAt.toDate() 
+        : new Date(data.updatedAt),
+      lastAccessedAt: data.lastAccessedAt instanceof Timestamp 
+        ? data.lastAccessedAt.toDate() 
+        : new Date(data.lastAccessedAt),
+      version: data.version || 1,
+      isAutoSaveEnabled: data.isAutoSaveEnabled ?? true,
+      sharedWith: data.sharedWith,
+      collaborators: data.collaborators,
+      suggestions: data.suggestions
+    };
+    
     return document;
   } catch (error) {
     console.error('Error getting document:', error);
-    throw new Error('Failed to get document');
+    throw error;
   }
-}
+};
 
 /**
  * Update a document
@@ -292,7 +337,7 @@ export async function getUserDocuments(
     );
 
     // Apply pagination at Firestore level (we'll do more filtering client-side)
-    q = query(q, firestoreLimit(100)); // Get more documents for client-side processing
+    q = query(q, limit(100)); // Get more documents for client-side processing
 
     const querySnapshot = await getDocs(q);
     const allDocuments: Document[] = [];
@@ -396,7 +441,7 @@ export async function getRecentDocuments(
     const q = query(
       collection(db, COLLECTIONS.DOCUMENTS),
       where('userId', '==', userId),
-      firestoreLimit(50) // Get more documents to sort client-side
+      limit(50) // Get more documents to sort client-side
     );
 
     const querySnapshot = await getDocs(q);

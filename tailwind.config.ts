@@ -203,7 +203,11 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
-} satisfies Config;
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/aspect-ratio'),
+    require('@tailwindcss/typography')
+  ]
+};
 
 export default config; 
