@@ -85,90 +85,59 @@ export const EditorPage: React.FC = () => {
       errorId,
       position: error.position,
       suggestion,
-      contextText: error.context.text
+      contextText: error.context.text,
+      highlightRange: [error.context.highlightStart, error.context.highlightEnd]
     });
 
     try {
-      // Get the current HTML content and plain text content
-      const currentHtmlContent = content;
-      const currentPlainText = currentHtmlContent.replace(/<[^>]*>/g, '');
+      // Get current plain text content from the editor for position mapping
+      const currentPlainText = content.replace(/<[^>]*>/g, '');
       
-      console.log('🔧 Content analysis:', {
-        htmlLength: currentHtmlContent.length,
-        plainTextLength: currentPlainText.length,
-        errorStart: error.position.start,
-        errorEnd: error.position.end
+      console.log('🔧 Editor-based replacement approach:', {
+        currentPlainTextLength: currentPlainText.length,
+        errorPosition: error.position,
+        textAtPosition: currentPlainText.substring(error.position.start, error.position.end)
       });
 
-      // Extract the original error text that needs to be replaced
-      const originalErrorText = currentPlainText.substring(error.position.start, error.position.end);
-      
-      console.log('🔧 Text to replace:', {
-        original: originalErrorText,
-        suggestion: suggestion,
-        contextBefore: currentPlainText.substring(Math.max(0, error.position.start - 10), error.position.start),
-        contextAfter: currentPlainText.substring(error.position.end, error.position.end + 10)
-      });
+      // Extract the exact text that should be replaced from the error context
+      const expectedErrorText = error.context.text.substring(
+        error.context.highlightStart,
+        error.context.highlightEnd
+      );
 
-      // Verify the original text matches what we expect from the error context
-      if (originalErrorText.trim() !== error.context.text.substring(error.context.highlightStart, error.context.highlightEnd).trim()) {
-        console.warn('🔧 Text mismatch detected, using context-based replacement');
-        
-        // Fallback: Find the error text within the current content
-        const errorTextFromContext = error.context.text.substring(error.context.highlightStart, error.context.highlightEnd);
-        const searchIndex = currentPlainText.indexOf(errorTextFromContext);
-        
-        if (searchIndex === -1) {
-          console.error('🔧 Could not locate error text in current content');
-          dismissError(errorId);
-          return;
-        }
-        
-        // Update positions to match found text
-        error.position.start = searchIndex;
-        error.position.end = searchIndex + errorTextFromContext.length;
+      console.log('🔧 Expected error text from context:', expectedErrorText);
+
+      // Apply capitalization preservation if needed
+      let finalSuggestion = suggestion;
+      if (shouldPreserveCapitalization(currentPlainText, error.position.start, expectedErrorText)) {
+        finalSuggestion = capitalizeFirstLetter(suggestion);
+        console.log('🔧 Preserving capitalization:', { original: expectedErrorText, suggestion, finalSuggestion });
       }
 
-      // Create the new plain text content with the suggestion applied
-      const beforeError = currentPlainText.substring(0, error.position.start);
-      const afterError = currentPlainText.substring(error.position.end);
-      const newPlainText = beforeError + suggestion + afterError;
-
-      console.log('🔧 Applying text replacement:', {
-        beforeLength: beforeError.length,
-        originalLength: originalErrorText.length,
-        suggestionLength: suggestion.length,
-        afterLength: afterError.length,
+      // Use direct content replacement approach
+      // This works by replacing in the plain text and letting the editor handle the update
+      const beforeText = currentPlainText.substring(0, error.position.start);
+      const afterText = currentPlainText.substring(error.position.end);
+      const newPlainText = beforeText + finalSuggestion + afterText;
+      
+      console.log('🔧 Direct content replacement:', {
+        beforeLength: beforeText.length,
+        originalLength: expectedErrorText.length,
+        suggestionLength: finalSuggestion.length,
+        afterLength: afterText.length,
         totalOldLength: currentPlainText.length,
-        totalNewLength: newPlainText.length
+        totalNewLength: newPlainText.length,
+        preview: {
+          before: beforeText.slice(-10),
+          original: expectedErrorText,
+          suggestion: finalSuggestion,
+          after: afterText.slice(0, 10)
+        }
       });
 
-      // If the content is plain text (no HTML tags), use the new plain text directly
-      const hasHtml = /<[^>]*>/.test(currentHtmlContent);
-      
-      if (!hasHtml) {
-        // Content is plain text, use direct replacement
-        updateContent(newPlainText);
-      } else {
-        // Content has HTML, we need to preserve formatting
-        // For now, we'll use a simple approach - in a production app, 
-        // you'd want more sophisticated HTML-aware text replacement
-        console.log('🔧 HTML content detected, using simplified replacement');
-        
-        // Try to find and replace the error text in the HTML content
-        const htmlWithReplacement = currentHtmlContent.replace(
-          originalErrorText,
-          suggestion
-        );
-        
-        if (htmlWithReplacement !== currentHtmlContent) {
-          updateContent(htmlWithReplacement);
-        } else {
-          // Fallback to plain text replacement
-          console.log('🔧 HTML replacement failed, falling back to plain text');
-          updateContent(newPlainText);
-        }
-      }
+      // Update the content directly
+      // This will trigger the editor to update and clear existing highlights
+      updateContent(newPlainText);
 
       // Dismiss the error after successful replacement
       dismissError(errorId);
@@ -180,6 +149,55 @@ export const EditorPage: React.FC = () => {
       // Still dismiss the error even if replacement fails to prevent UI confusion
       dismissError(errorId);
     }
+  };
+
+  /**
+   * Check if we should preserve capitalization (start of sentence/document)
+   */
+  const shouldPreserveCapitalization = (text: string, position: number, originalText: string): boolean => {
+    // If original text starts with uppercase, we should preserve it
+    const originalStartsWithUpper = /^[A-Z]/.test(originalText);
+    
+    console.log('🔧 Capitalization check:', {
+      originalText,
+      originalStartsWithUpper,
+      position,
+      textAtPosition: text.substring(Math.max(0, position - 5), position + 5)
+    });
+    
+    if (!originalStartsWithUpper) {
+      console.log('🔧 Original text does not start with uppercase, no preservation needed');
+      return false;
+    }
+    
+    // Check if this is at the start of the document
+    if (position === 0) {
+      console.log('🔧 Position is at start of document, preserving capitalization');
+      return true;
+    }
+    
+    // Check if this follows a sentence-ending punctuation
+    const beforeText = text.substring(0, position).trim();
+    const sentenceEndPattern = /[.!?]\s*$/;
+    const followsSentenceEnd = sentenceEndPattern.test(beforeText);
+    
+    console.log('🔧 Sentence end check:', {
+      beforeText: beforeText.slice(-20),
+      followsSentenceEnd,
+      shouldPreserve: followsSentenceEnd
+    });
+    
+    return followsSentenceEnd;
+  };
+
+  /**
+   * Capitalize the first letter of a string
+   */
+  const capitalizeFirstLetter = (text: string): string => {
+    if (!text) return text;
+    const result = text.charAt(0).toUpperCase() + text.slice(1);
+    console.log('🔧 Capitalizing:', { original: text, result });
+    return result;
   };
 
   const handleDismissError = (errorId: string) => {

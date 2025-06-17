@@ -90,10 +90,10 @@ export async function checkGrammarAndSpelling(
   text: string,
   language: string = 'en-US'
 ): Promise<GrammarAnalysisResult> {
-  // 🧪 DEMO MODE: Return mock data for testing UI
+  // 🧪 ENHANCED DEMO MODE: More comprehensive pattern matching
   // Remove this block and uncomment the real API code below for production
   
-  console.log('🧪 Using mock grammar analysis for:', text.substring(0, 50) + '...');
+  console.log('🧪 Using enhanced mock grammar analysis for:', text.substring(0, 50) + '...');
   
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 800));
@@ -101,105 +101,111 @@ export async function checkGrammarAndSpelling(
   // Generate mock errors based on text content
   const mockErrors: AnalyzedError[] = [];
   
-  // Look for common patterns to simulate errors
-  if (text.toLowerCase().includes('this are')) {
-    const pos = text.toLowerCase().indexOf('this are');
-    mockErrors.push({
-      id: 'mock-grammar-1',
-      type: 'grammar',
-      severity: 'error',
-      position: { start: pos, end: pos + 8 },
-      message: 'Subject-verb disagreement. "This" is singular, so use "is" instead of "are".',
-      shortMessage: 'Subject-verb disagreement',
-      suggestions: ['this is', 'these are'],
-      rule: {
-        id: 'SUBJECT_VERB_DISAGREEMENT',
-        description: 'Subject and verb must agree in number',
-        category: 'Grammar'
-      },
-      context: {
-        text: text.substring(Math.max(0, pos - 10), pos + 20),
-        highlightStart: Math.min(10, pos),
-        highlightEnd: Math.min(10, pos) + 8
+  // Comprehensive grammar patterns
+  const grammarPatterns = [
+    // Subject-verb disagreement
+    { pattern: /\b(this|that)\s+are\b/gi, replacement: ['this is', 'that is'], type: 'grammar', message: 'Subject-verb disagreement. Use "is" with singular subjects.' },
+    { pattern: /\b(these|those)\s+is\b/gi, replacement: ['these are', 'those are'], type: 'grammar', message: 'Subject-verb disagreement. Use "are" with plural subjects.' },
+    { pattern: /\bI\s+are\b/gi, replacement: ['I am'], type: 'grammar', message: 'Subject-verb disagreement. Use "am" with "I".' },
+    { pattern: /\bhe\s+are\b/gi, replacement: ['he is'], type: 'grammar', message: 'Subject-verb disagreement. Use "is" with "he".' },
+    { pattern: /\bshe\s+are\b/gi, replacement: ['she is'], type: 'grammar', message: 'Subject-verb disagreement. Use "is" with "she".' },
+    
+    // Verb forms
+    { pattern: /\bI\s+has\b/gi, replacement: ['I have'], type: 'grammar', message: 'Incorrect verb form. Use "have" with "I".' },
+    { pattern: /\bwe\s+has\b/gi, replacement: ['we have'], type: 'grammar', message: 'Incorrect verb form. Use "have" with "we".' },
+    { pattern: /\bthey\s+has\b/gi, replacement: ['they have'], type: 'grammar', message: 'Incorrect verb form. Use "have" with "they".' },
+    
+    // Articles
+    { pattern: /\ban\s+[bcdfghjklmnpqrstvwxyz]/gi, replacement: ['a'], type: 'grammar', message: 'Use "a" before consonant sounds.' },
+    { pattern: /\ba\s+[aeiou]/gi, replacement: ['an'], type: 'grammar', message: 'Use "an" before vowel sounds.' },
+    
+    // Prepositions
+    { pattern: /\bdifferent\s+than\b/gi, replacement: ['different from'], type: 'grammar', message: 'Use "different from" instead of "different than".' },
+    { pattern: /\bcould\s+of\b/gi, replacement: ['could have'], type: 'grammar', message: 'Use "could have" instead of "could of".' },
+    { pattern: /\bwould\s+of\b/gi, replacement: ['would have'], type: 'grammar', message: 'Use "would have" instead of "would of".' },
+    { pattern: /\bshould\s+of\b/gi, replacement: ['should have'], type: 'grammar', message: 'Use "should have" instead of "should of".' },
+  ];
+
+  // Common spelling mistakes
+  const spellingPatterns = [
+    { pattern: /\bteh\b/gi, replacement: ['the'], type: 'spelling', message: 'Possible spelling mistake.' },
+    { pattern: /\brecieve\b/gi, replacement: ['receive'], type: 'spelling', message: 'Spelling error. Remember "i before e except after c".' },
+    { pattern: /\boccured\b/gi, replacement: ['occurred'], type: 'spelling', message: 'Spelling error. "Occurred" has double "r".' },
+    { pattern: /\bseperate\b/gi, replacement: ['separate'], type: 'spelling', message: 'Spelling error. "Separate" has "a" in the middle.' },
+    { pattern: /\bdefinately\b/gi, replacement: ['definitely'], type: 'spelling', message: 'Spelling error. "Definitely" has "i" not "a".' },
+    { pattern: /\bneccessary\b/gi, replacement: ['necessary'], type: 'spelling', message: 'Spelling error. "Necessary" has one "c" and two "s".' },
+    { pattern: /\baccommodate\b/gi, replacement: ['accommodate'], type: 'spelling', message: 'Spelling error. "Accommodate" has double "c" and double "m".' },
+    { pattern: /\bconscious\b/gi, replacement: ['conscious'], type: 'spelling', message: 'Spelling error. "Conscious" has "sc" in the middle.' },
+    { pattern: /\bembarrass\b/gi, replacement: ['embarrass'], type: 'spelling', message: 'Spelling error. "Embarrass" has double "r" and double "s".' },
+    { pattern: /\bfull-proof\b/gi, replacement: ['foolproof'], type: 'spelling', message: 'Spelling error. The correct term is "foolproof".' },
+    { pattern: /\balot\b/gi, replacement: ['a lot'], type: 'spelling', message: 'Spelling error. "A lot" is two words.' },
+    { pattern: /\bthier\b/gi, replacement: ['their'], type: 'spelling', message: 'Spelling error. "Their" has "ei" not "ie".' },
+    { pattern: /\bwierd\b/gi, replacement: ['weird'], type: 'spelling', message: 'Spelling error. "Weird" has "ei" not "ie".' },
+  ];
+
+  // Style suggestions
+  const stylePatterns = [
+    { pattern: /\bvery\s+very\b/gi, replacement: ['extremely', 'quite'], type: 'style', message: 'Avoid redundant intensifiers for clearer writing.' },
+    { pattern: /\breally\s+quite\s+extremely\b/gi, replacement: ['extremely', 'very'], type: 'style', message: 'Avoid redundant intensifiers for clearer writing.' },
+    { pattern: /\bactually\b/gi, replacement: [''], type: 'style', message: 'Consider removing "actually" for more direct writing.' },
+    { pattern: /\bbasically\b/gi, replacement: [''], type: 'style', message: 'Consider removing "basically" for more direct writing.' },
+    { pattern: /\bthat\s+that\b/gi, replacement: ['that'], type: 'style', message: 'Avoid repeating "that" for better flow.' },
+    { pattern: /\bin\s+order\s+to\b/gi, replacement: ['to'], type: 'style', message: 'Consider using "to" instead of "in order to" for conciseness.' },
+    { pattern: /\bdue\s+to\s+the\s+fact\s+that\b/gi, replacement: ['because'], type: 'style', message: 'Consider using "because" instead of "due to the fact that".' },
+  ];
+
+  // Process all patterns
+  const allPatterns = [...grammarPatterns, ...spellingPatterns, ...stylePatterns];
+  
+  allPatterns.forEach((patternObj, index) => {
+    const matches = Array.from(text.matchAll(patternObj.pattern));
+    
+    matches.forEach((match, matchIndex) => {
+      if (match.index !== undefined) {
+        const startPos = match.index;
+        const endPos = startPos + match[0].length;
+        
+        // Create context around the error
+        const contextStart = Math.max(0, startPos - 20);
+        const contextEnd = Math.min(text.length, endPos + 20);
+        const contextText = text.substring(contextStart, contextEnd);
+        const highlightStart = startPos - contextStart;
+        const highlightEnd = endPos - contextStart;
+        
+        mockErrors.push({
+          id: `${patternObj.type}-${index}-${matchIndex}`,
+          type: patternObj.type as 'grammar' | 'spelling' | 'style',
+          severity: patternObj.type === 'spelling' || patternObj.type === 'grammar' ? 'error' : 'suggestion',
+          position: { start: startPos, end: endPos },
+          message: patternObj.message,
+          shortMessage: patternObj.type === 'grammar' ? 'Grammar error' : 
+                       patternObj.type === 'spelling' ? 'Spelling error' : 'Style suggestion',
+          suggestions: patternObj.replacement,
+          rule: {
+            id: `${patternObj.type.toUpperCase()}_${index}`,
+            description: patternObj.message,
+            category: patternObj.type === 'grammar' ? 'Grammar' : 
+                     patternObj.type === 'spelling' ? 'Spelling' : 'Style'
+          },
+          context: {
+            text: contextText,
+            highlightStart,
+            highlightEnd
+          }
+        });
       }
     });
-  }
-  
-  if (text.toLowerCase().includes('teh ')) {
-    const pos = text.toLowerCase().indexOf('teh ');
-    mockErrors.push({
-      id: 'mock-spelling-1',
-      type: 'spelling',
-      severity: 'error',
-      position: { start: pos, end: pos + 3 },
-      message: 'Possible spelling mistake found.',
-      shortMessage: 'Spelling error',
-      suggestions: ['the', 'tea', 'ten'],
-      rule: {
-        id: 'SPELLING_MISTAKE',
-        description: 'Spelling mistake',
-        category: 'Spelling'
-      },
-      context: {
-        text: text.substring(Math.max(0, pos - 10), pos + 15),
-        highlightStart: Math.min(10, pos),
-        highlightEnd: Math.min(10, pos) + 3
-      }
-    });
-  }
-  
-  if (text.includes('very very') || text.includes('really quite extremely')) {
-    const pos = text.search(/very very|really quite extremely/);
-    mockErrors.push({
-      id: 'mock-style-1',
-      type: 'style',
-      severity: 'suggestion',
-      position: { start: pos, end: pos + 10 },
-      message: 'Consider avoiding redundant intensifiers for clearer writing.',
-      shortMessage: 'Redundant words',
-      suggestions: ['very', 'extremely', 'quite'],
-      rule: {
-        id: 'REDUNDANT_INTENSIFIERS',
-        description: 'Avoid redundant intensifiers',
-        category: 'Style'
-      },
-      context: {
-        text: text.substring(Math.max(0, pos - 10), pos + 20),
-        highlightStart: 10,
-        highlightEnd: 20
-      }
-    });
-  }
-  
-  // Random error for any text longer than 20 characters
-  if (text.length > 20 && Math.random() > 0.7) {
-    const randomPos = Math.floor(Math.random() * (text.length - 10));
-    const word = text.substring(randomPos, randomPos + 5);
-    mockErrors.push({
-      id: 'mock-random-1',
-      type: 'style',
-      severity: 'suggestion',
-      position: { start: randomPos, end: randomPos + 5 },
-      message: `Consider rephrasing for better clarity.`,
-      shortMessage: 'Style suggestion',
-      suggestions: ['improved phrase', 'better wording'],
-      rule: {
-        id: 'STYLE_IMPROVEMENT',
-        description: 'Style improvement suggestion',
-        category: 'Style'
-      },
-      context: {
-        text: text.substring(Math.max(0, randomPos - 10), randomPos + 15),
-        highlightStart: 10,
-        highlightEnd: 15
-      }
-    });
-  }
-  
-  const statistics = calculateStatistics(mockErrors);
+  });
+
+  // Remove duplicates and sort by position
+  const uniqueErrors = mockErrors.filter((error, index, self) => 
+    index === self.findIndex(e => e.position.start === error.position.start && e.position.end === error.position.end)
+  ).sort((a, b) => a.position.start - b.position.start);
+
+  const statistics = calculateStatistics(uniqueErrors);
   
   return {
-    errors: mockErrors,
+    errors: uniqueErrors,
     statistics,
     language: 'en-US'
   };
