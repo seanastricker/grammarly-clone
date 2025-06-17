@@ -52,11 +52,11 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
     title={title}
     className={cn(
       'p-2 rounded-md transition-colors',
-      'hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
+      'hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       isActive 
-        ? 'bg-primary text-primary-foreground' 
-        : 'text-muted-foreground hover:text-foreground'
+        ? 'bg-blue-600 text-white' 
+        : 'text-slate-600 hover:text-slate-900'
     )}
   >
     {children}
@@ -64,7 +64,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 );
 
 const ToolbarSeparator: React.FC = () => (
-  <div className="w-px h-6 bg-border mx-1" />
+  <div className="w-px h-6 bg-slate-200 mx-1" />
 );
 
 export const EditorToolbar: React.FC<ToolbarProps> = ({ editor, className }) => {
@@ -74,7 +74,7 @@ export const EditorToolbar: React.FC<ToolbarProps> = ({ editor, className }) => 
 
   return (
     <div className={cn(
-      'flex items-center space-x-1 p-2 border-b border-border bg-background',
+      'flex items-center space-x-1 p-2 border-b border-slate-200 bg-white',
       'overflow-x-auto scrollbar-thin',
       className
     )}>

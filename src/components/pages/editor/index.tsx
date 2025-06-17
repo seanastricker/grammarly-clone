@@ -221,14 +221,14 @@ export const EditorPage: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center">
-        <div className="text-center space-y-6 p-8 bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 shadow-soft">
-          <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-6 p-8 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="w-16 h-16 mx-auto bg-slate-50 rounded-lg flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-700" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">Loading Document</h2>
-            <p className="text-muted-foreground">Preparing your writing space...</p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Loading Document</h2>
+            <p className="text-slate-600">Preparing your writing space...</p>
           </div>
         </div>
       </div>
@@ -238,18 +238,18 @@ export const EditorPage: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center">
-        <div className="text-center space-y-6 max-w-md p-8 bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 shadow-soft">
-          <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md p-8 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center mx-auto">
             <span className="text-2xl">⚠️</span>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">Error Loading Document</h1>
-            <p className="text-muted-foreground">{error}</p>
+            <h1 className="text-xl font-semibold text-slate-900 mb-2">Error Loading Document</h1>
+            <p className="text-slate-600">{error}</p>
           </div>
           <button
             onClick={goBack}
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-medium"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium"
           >
             Back to Dashboard
           </button>
@@ -261,20 +261,20 @@ export const EditorPage: React.FC = () => {
   // Document not found
   if (!isReady || !document) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center">
-        <div className="text-center space-y-6 max-w-md p-8 bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 shadow-soft">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md p-8 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto">
             <span className="text-2xl">📄</span>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">Document Not Found</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl font-semibold text-slate-900 mb-2">Document Not Found</h1>
+            <p className="text-slate-600">
               The document you're looking for doesn't exist or you don't have permission to view it.
             </p>
           </div>
           <button
             onClick={goBack}
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-medium"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium"
           >
             Back to Dashboard
           </button>
@@ -284,34 +284,33 @@ export const EditorPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Enhanced Header */}
-      <header className="relative border-b border-border/50 bg-card/30 backdrop-blur-xl supports-[backdrop-filter]:bg-card/30 sticky top-0 z-50 shadow-soft">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-tertiary/5" />
-        <div className="relative flex items-center justify-between px-6 py-4">
+      <header className="relative border-b border-slate-200 bg-white sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-4">
           {/* Left side */}
           <div className="flex items-center gap-6">
             <button
               onClick={goBack}
-              className="p-3 rounded-2xl hover:bg-muted/50 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md group"
+              className="p-3 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm group"
               title="Back to Dashboard"
             >
-              <ArrowLeft className="w-5 h-5 group-hover:text-primary transition-colors" />
+              <ArrowLeft className="w-5 h-5 group-hover:text-slate-900 transition-colors text-slate-700" />
             </button>
             
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <h1 className="text-xl font-bold text-foreground truncate max-w-[300px]" title={document.title}>
+                <h1 className="text-xl font-bold text-slate-900 truncate max-w-[300px]" title={document.title}>
                   {document.title}
                 </h1>
                 {isGrammarEnabled && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-lg text-xs font-medium text-primary">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-lg text-xs font-medium text-blue-700">
                     <Sparkles className="w-3 h-3" />
                     AI Enabled
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4 text-sm text-slate-600">
                 <span className="capitalize flex items-center gap-1">
                   📝 {document.type}
                 </span>
@@ -341,10 +340,10 @@ export const EditorPage: React.FC = () => {
                 onClick={saveDocument}
                 disabled={isSaving || !hasUnsavedChanges}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300',
+                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                   hasUnsavedChanges
-                    ? 'bg-gradient-to-r from-primary to-tertiary text-primary-foreground hover:shadow-lg transform hover:-translate-y-0.5'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm transform hover:-translate-y-0.5'
+                    : 'bg-slate-100 text-slate-500 cursor-not-allowed'
                 )}
                 title="Save Document (Ctrl+S)"
               >
@@ -354,7 +353,7 @@ export const EditorPage: React.FC = () => {
             </div>
 
             {/* Toggle Actions */}
-            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
               <button
                 onClick={() => {
                   const newState = !isGrammarEnabled;
@@ -368,15 +367,15 @@ export const EditorPage: React.FC = () => {
                   }
                 }}
                 className={cn(
-                  'p-2 rounded-xl transition-all duration-300 group',
+                  'p-2 rounded-lg transition-all duration-200 group',
                   isGrammarEnabled
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'hover:bg-muted text-muted-foreground'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'hover:bg-slate-200 text-slate-600'
                 )}
                 title={isGrammarEnabled ? 'Disable Grammar Check' : 'Enable Grammar Check'}
               >
                 <FileCheck className={cn(
-                  "w-4 h-4 transition-transform duration-300",
+                  "w-4 h-4 transition-transform duration-200",
                   isGrammarEnabled ? "scale-110" : "group-hover:scale-110"
                 )} />
               </button>
@@ -384,15 +383,15 @@ export const EditorPage: React.FC = () => {
               <button
                 onClick={() => setShowSuggestions(!showSuggestions)}
                 className={cn(
-                  'p-2 rounded-xl transition-all duration-300 group',
+                  'p-2 rounded-lg transition-all duration-200 group',
                   showSuggestions
-                    ? 'bg-secondary text-secondary-foreground shadow-sm'
-                    : 'hover:bg-muted text-muted-foreground'
+                    ? 'bg-slate-600 text-white shadow-sm'
+                    : 'hover:bg-slate-200 text-slate-600'
                 )}
                 title={showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}
               >
                 <Eye className={cn(
-                  "w-4 h-4 transition-transform duration-300",
+                  "w-4 h-4 transition-transform duration-200",
                   showSuggestions ? "scale-110" : "group-hover:scale-110"
                 )} />
               </button>
@@ -400,15 +399,15 @@ export const EditorPage: React.FC = () => {
               <button
                 onClick={() => setShowStats(!showStats)}
                 className={cn(
-                  'p-2 rounded-xl transition-all duration-300 group',
+                  'p-2 rounded-lg transition-all duration-200 group',
                   showStats
-                    ? 'bg-tertiary text-tertiary-foreground shadow-sm'
-                    : 'hover:bg-muted text-muted-foreground'
+                    ? 'bg-slate-700 text-white shadow-sm'
+                    : 'hover:bg-slate-200 text-slate-600'
                 )}
                 title={showStats ? 'Hide Statistics' : 'Show Statistics'}
               >
                 <BarChart className={cn(
-                  "w-4 h-4 transition-transform duration-300",
+                  "w-4 h-4 transition-transform duration-200",
                   showStats ? "scale-110" : "group-hover:scale-110"
                 )} />
               </button>
@@ -417,21 +416,21 @@ export const EditorPage: React.FC = () => {
             {/* Secondary Actions */}
             <div className="flex items-center gap-1">
               <button
-                className="p-2 rounded-xl hover:bg-muted/50 transition-all duration-300 hover:-translate-y-0.5 text-muted-foreground hover:text-foreground"
+                className="p-2 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-900"
                 title="Download Document"
               >
                 <Download className="w-4 h-4" />
               </button>
               
               <button
-                className="p-2 rounded-xl hover:bg-muted/50 transition-all duration-300 hover:-translate-y-0.5 text-muted-foreground hover:text-foreground"
+                className="p-2 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-900"
                 title="Share Document"
               >
                 <Share className="w-4 h-4" />
               </button>
               
               <button
-                className="p-2 rounded-xl hover:bg-muted/50 transition-all duration-300 hover:-translate-y-0.5 text-muted-foreground hover:text-foreground"
+                className="p-2 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-900"
                 title="Document Settings"
               >
                 <Settings className="w-4 h-4" />
@@ -446,7 +445,7 @@ export const EditorPage: React.FC = () => {
         {/* Editor */}
         <main className="flex-1 overflow-hidden relative">
           <div className="h-full p-8 max-w-4xl mx-auto">
-            <div className="h-full bg-card/30 backdrop-blur-sm rounded-3xl border border-border/50 shadow-soft overflow-hidden">
+            <div className="h-full bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <RichTextEditor
                 content={content}
                 onUpdate={(newContent) => {
@@ -470,7 +469,7 @@ export const EditorPage: React.FC = () => {
         <div className="absolute right-6 top-6 bottom-6 flex flex-col gap-4 z-10">
           {/* Suggestions Panel */}
           {showSuggestions && isGrammarEnabled && (
-            <div className="w-80 bg-card/50 backdrop-blur-xl rounded-3xl border border-border/50 shadow-medium overflow-hidden animate-slide-in-right">
+            <div className="w-80 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-slide-in-right">
               <SuggestionsPanel
                 errors={grammarErrors}
                 statistics={grammarStatistics}
@@ -490,7 +489,7 @@ export const EditorPage: React.FC = () => {
           
           {/* Stats Sidebar */}
           {showStats && (
-            <div className="w-80 bg-card/50 backdrop-blur-xl rounded-3xl border border-border/50 shadow-medium overflow-hidden animate-slide-in-right" style={{ animationDelay: '0.1s' }}>
+            <div className="w-80 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-slide-in-right" style={{ animationDelay: '0.1s' }}>
               <StatsSidebar
                 document={document}
                 stats={stats}

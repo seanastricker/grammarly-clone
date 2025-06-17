@@ -229,8 +229,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Your Documents</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-2xl font-bold text-slate-900">Your Documents</h2>
+          <p className="text-slate-600">
             {filteredDocuments.length} of {allDocuments.length} document{allDocuments.length !== 1 ? 's' : ''}
             {searchQuery && ` matching "${searchQuery}"`}
           </p>
@@ -239,7 +239,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         {onCreateNew && (
           <button
             onClick={onCreateNew}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>New Document</span>
@@ -251,13 +251,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
             type="text"
             placeholder="Search documents..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
@@ -265,7 +265,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as DocumentType | '')}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="">All Types</option>
           <option value="article">Article</option>
@@ -281,7 +281,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         <select
           value={privacyFilter}
           onChange={(e) => setPrivacyFilter(e.target.value as DocumentPrivacy | '')}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="">All Privacy</option>
           <option value="private">Private</option>
@@ -299,7 +299,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               direction: direction as 'asc' | 'desc'
             });
           }}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="updatedAt-desc">Recently Updated</option>
           <option value="createdAt-desc">Recently Created</option>
@@ -326,13 +326,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       ) : (
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-8 h-8 text-muted-foreground" />
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-8 h-8 text-slate-500" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">
+            <h3 className="text-lg font-medium text-slate-900 mb-2">
               {allDocuments.length === 0 ? 'No documents yet' : 'No documents found'}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-slate-600 mb-4">
               {allDocuments.length === 0
                 ? 'Get started by creating your first document.'
                 : 'Try adjusting your search terms or filters.'}
@@ -340,7 +340,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             {onCreateNew && allDocuments.length === 0 && (
               <button
                 onClick={onCreateNew}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 rounded-lg transition-colors"
               >
                 Create Your First Document
               </button>

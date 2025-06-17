@@ -68,31 +68,31 @@ const SuggestionCard: React.FC<{
   });
 
   return (
-    <div className="border border-border rounded-lg p-4 space-y-3 bg-card">
+    <div className="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3 flex-1">
           <ErrorTypeIcon type={error.type} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="text-sm font-medium text-foreground capitalize">
+              <span className="text-sm font-medium text-slate-900 capitalize">
                 {error.type}
               </span>
               <SeverityBadge severity={error.severity} />
             </div>
-            <p className="text-sm text-muted-foreground mb-2">{error.shortMessage}</p>
+            <p className="text-sm text-slate-600 mb-2">{error.shortMessage}</p>
             
             {/* Context */}
-            <div className="bg-muted/50 rounded p-2 text-sm font-mono">
-              <span className="text-muted-foreground">
+            <div className="bg-slate-100 rounded p-2 text-sm font-mono">
+              <span className="text-slate-600">
                 {error.context.text.substring(0, error.context.highlightStart)}
               </span>
-              <span className="bg-red-200 dark:bg-red-900/50 px-1 rounded">
+              <span className="bg-red-200 px-1 rounded">
                 {error.context.text.substring(
                   error.context.highlightStart,
                   error.context.highlightEnd
                 )}
               </span>
-              <span className="text-muted-foreground">
+              <span className="text-slate-600">
                 {error.context.text.substring(error.context.highlightEnd)}
               </span>
             </div>
@@ -101,7 +101,7 @@ const SuggestionCard: React.FC<{
         
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 rounded-md hover:bg-muted transition-colors"
+          className="p-1 rounded-md hover:bg-slate-100 transition-colors text-slate-600"
         >
           {isExpanded ? (
             <ChevronUp className="w-4 h-4" />
@@ -114,14 +114,14 @@ const SuggestionCard: React.FC<{
       {/* Suggestions */}
       {error.suggestions.length > 0 && (
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">
+          <label className="text-xs font-medium text-slate-600">
             Suggestions:
           </label>
           <div className="space-y-1">
             {error.suggestions.slice(0, 3).map((suggestion, index) => (
               <label
                 key={index}
-                className="flex items-center space-x-2 p-2 rounded border border-border hover:bg-muted/50 cursor-pointer"
+                className="flex items-center space-x-2 p-2 rounded border border-slate-200 hover:bg-slate-100 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -129,9 +129,9 @@ const SuggestionCard: React.FC<{
                   value={suggestion}
                   checked={selectedSuggestion === suggestion}
                   onChange={(e) => setSelectedSuggestion(e.target.value)}
-                  className="text-primary"
+                  className="text-blue-600"
                 />
-                <span className="text-sm font-mono text-foreground">{suggestion}</span>
+                <span className="text-sm font-mono text-slate-900">{suggestion}</span>
               </label>
             ))}
           </div>
@@ -140,17 +140,17 @@ const SuggestionCard: React.FC<{
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="pt-2 border-t border-border">
+        <div className="pt-2 border-t border-slate-200">
           <div className="space-y-2">
             <div>
-              <span className="text-xs font-medium text-muted-foreground">Rule: </span>
-              <span className="text-xs text-foreground">{error.rule.id}</span>
+              <span className="text-xs font-medium text-slate-600">Rule: </span>
+              <span className="text-xs text-slate-900">{error.rule.id}</span>
             </div>
             <div>
-              <span className="text-xs font-medium text-muted-foreground">Category: </span>
-              <span className="text-xs text-foreground">{error.rule.category}</span>
+              <span className="text-xs font-medium text-slate-600">Category: </span>
+              <span className="text-xs text-slate-900">{error.rule.category}</span>
             </div>
-            <p className="text-xs text-muted-foreground">{error.message}</p>
+            <p className="text-xs text-slate-600">{error.message}</p>
           </div>
         </div>
       )}
@@ -171,7 +171,7 @@ const SuggestionCard: React.FC<{
               console.error('🔧 DISMISS - Error calling onDismiss():', err);
             }
           }}
-          className="flex items-center space-x-1 px-3 py-1 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          className="flex items-center space-x-1 px-3 py-1 text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
         >
           <X className="w-3 h-3" />
           <span>Dismiss</span>
@@ -198,7 +198,7 @@ const SuggestionCard: React.FC<{
               }
             }}
             disabled={!selectedSuggestion}
-            className="flex items-center space-x-1 px-3 py-1 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             <CheckCircle2 className="w-3 h-3" />
             <span>Apply</span>
@@ -230,13 +230,13 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
   };
 
   return (
-    <div className={cn('w-80 border-l border-border bg-background overflow-hidden flex flex-col', className)}>
+    <div className={cn('w-80 border-l border-slate-200 bg-white overflow-hidden flex flex-col', className)}>
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-foreground">Writing Assistant</h3>
+          <h3 className="font-semibold text-slate-900">Writing Assistant</h3>
           {isAnalyzing && (
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <div className="flex items-center space-x-2 text-sm text-slate-600">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
               <span>Analyzing...</span>
             </div>
@@ -247,7 +247,7 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
         {statistics && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Quality Score</span>
+              <span className="text-sm text-slate-600">Quality Score</span>
               <span className={cn(
                 'text-sm font-medium',
                 statistics.qualityScore >= 80 ? 'text-green-600' :
@@ -256,7 +256,7 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
                 {statistics.qualityScore}/100
               </span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
+            <div className="w-full bg-slate-200 rounded-full h-2">
               <div
                 className={cn(
                   'h-2 rounded-full transition-all duration-300',
@@ -271,7 +271,7 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
       </div>
 
       {/* Filter tabs */}
-      <div className="border-b border-border">
+      <div className="border-b border-slate-200">
         <div className="flex">
           {(['all', 'grammar', 'spelling', 'style'] as const).map((type) => (
             <button
@@ -280,8 +280,8 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
               className={cn(
                 'flex-1 px-3 py-2 text-xs font-medium border-b-2 transition-colors',
                 filter === type
-                  ? 'border-primary text-primary bg-primary/5'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  ? 'border-blue-600 text-blue-700 bg-blue-50'
+                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               )}
             >
               <span className="capitalize">{type}</span>
@@ -300,7 +300,7 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
               <div className="flex space-x-2">
                 <button
                   onClick={() => onAcceptAll(filter === 'all' ? undefined : filter)}
-                  className="flex-1 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  className="flex-1 px-3 py-2 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Accept All {filter !== 'all' && filter}
                 </button>
@@ -327,8 +327,8 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center">
               <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
-              <h4 className="font-medium text-foreground mb-1">All Clear!</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-medium text-slate-900 mb-1">All Clear!</h4>
+              <p className="text-sm text-slate-600">
                 {filter === 'all' 
                   ? "No issues found in your writing."
                   : `No ${filter} issues found.`}

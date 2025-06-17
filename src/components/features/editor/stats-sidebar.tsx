@@ -61,22 +61,22 @@ export const StatsSidebar: React.FC<StatsSidebarProps> = ({
   };
 
   return (
-    <div className={cn('w-64 border-l border-border bg-background p-4 space-y-6', className)}>
+    <div className={cn('w-64 border-l border-slate-200 bg-white p-4 space-y-6', className)}>
       {/* Document Info */}
       {document && (
         <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">Document</h3>
+          <h3 className="font-semibold text-slate-900">Document</h3>
           <div className="space-y-2">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Title</p>
-              <p className="text-sm font-medium text-foreground truncate" title={document.title}>
+              <p className="text-xs text-slate-600 uppercase tracking-wide">Title</p>
+              <p className="text-sm font-medium text-slate-900 truncate" title={document.title}>
                 {document.title}
               </p>
             </div>
             
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Type</p>
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-primary/10 text-primary capitalize">
+              <p className="text-xs text-slate-600 uppercase tracking-wide">Type</p>
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 capitalize">
                 {document.type}
               </span>
             </div>
@@ -86,7 +86,7 @@ export const StatsSidebar: React.FC<StatsSidebarProps> = ({
 
       {/* Save Status */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-foreground">Status</h3>
+        <h3 className="font-semibold text-slate-900">Status</h3>
         
         <div className="flex items-center space-x-2">
           {isSaving ? (
@@ -107,39 +107,39 @@ export const StatsSidebar: React.FC<StatsSidebarProps> = ({
           )}
         </div>
         
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-slate-600">
           Last saved: {formatLastSaved(lastSaved)}
         </p>
       </div>
 
       {/* Writing Statistics */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-foreground">Statistics</h3>
+        <h3 className="font-semibold text-slate-900">Statistics</h3>
         
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Words</span>
-            <span className="text-sm font-medium">{formatNumber(stats.wordCount)}</span>
+            <span className="text-sm text-slate-600">Words</span>
+            <span className="text-sm font-medium text-slate-900">{formatNumber(stats.wordCount)}</span>
           </div>
           
           <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Characters</span>
-            <span className="text-sm font-medium">{formatNumber(stats.characterCount)}</span>
+            <span className="text-sm text-slate-600">Characters</span>
+            <span className="text-sm font-medium text-slate-900">{formatNumber(stats.characterCount)}</span>
           </div>
           
           <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">No spaces</span>
-            <span className="text-sm font-medium">{formatNumber(stats.characterCountNoSpaces)}</span>
+            <span className="text-sm text-slate-600">No spaces</span>
+            <span className="text-sm font-medium text-slate-900">{formatNumber(stats.characterCountNoSpaces)}</span>
           </div>
           
           <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Paragraphs</span>
-            <span className="text-sm font-medium">{formatNumber(stats.paragraphCount)}</span>
+            <span className="text-sm text-slate-600">Paragraphs</span>
+            <span className="text-sm font-medium text-slate-900">{formatNumber(stats.paragraphCount)}</span>
           </div>
           
           <div className="flex justify-between">
-            <span className="text-sm text-muted-foreground">Reading time</span>
-            <span className="text-sm font-medium">{stats.readingTime} min</span>
+            <span className="text-sm text-slate-600">Reading time</span>
+            <span className="text-sm font-medium text-slate-900">{stats.readingTime} min</span>
           </div>
         </div>
       </div>

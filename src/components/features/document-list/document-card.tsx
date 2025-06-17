@@ -49,16 +49,16 @@ const documentTypeIcons: Record<DocumentType, typeof FileText> = {
 };
 
 /**
- * Document type colors
+ * Document type colors - Updated to elegant, muted palette
  */
 const documentTypeColors: Record<DocumentType, string> = {
-  article: 'text-blue-600 bg-blue-50 border-blue-200',
-  essay: 'text-purple-600 bg-purple-50 border-purple-200',
-  email: 'text-green-600 bg-green-50 border-green-200',
-  letter: 'text-orange-600 bg-orange-50 border-orange-200',
-  report: 'text-red-600 bg-red-50 border-red-200',
-  creative: 'text-pink-600 bg-pink-50 border-pink-200',
-  other: 'text-gray-600 bg-gray-50 border-gray-200'
+  article: 'text-slate-700 bg-slate-50 border-slate-200/50',
+  essay: 'text-slate-700 bg-slate-50 border-slate-200/50',
+  email: 'text-blue-700 bg-blue-50 border-blue-200/50',
+  letter: 'text-slate-700 bg-slate-50 border-slate-200/50',
+  report: 'text-slate-700 bg-slate-50 border-slate-200/50',
+  creative: 'text-slate-700 bg-slate-50 border-slate-200/50',
+  other: 'text-slate-600 bg-slate-50 border-slate-200/50'
 };
 
 /**
@@ -121,8 +121,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   return (
     <div
       className={cn(
-        'group relative bg-background border border-border rounded-lg p-6',
-        'hover:shadow-md hover:border-border/60 transition-all duration-200',
+        'group relative bg-white border border-slate-200 rounded-lg p-6',
+        'hover:shadow-md hover:border-slate-300 transition-all duration-200',
         'cursor-pointer',
         className
       )}
@@ -131,11 +131,11 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
-          <div className={cn('p-2 rounded-md border', typeColorClass)}>
+          <div className={cn('p-2 rounded-lg border', typeColorClass)}>
             <Icon className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">
+            <h3 className="font-semibold text-slate-900 truncate">
               {document.title}
             </h3>
             <div className="flex items-center space-x-2 mt-1">
@@ -145,7 +145,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
               )}>
                 {document.type}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-slate-600">
                 {document.privacy}
               </span>
             </div>
@@ -156,7 +156,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         <div className="relative">
           <button
             className={cn(
-              'p-2 rounded-md hover:bg-muted transition-colors',
+              'p-2 rounded-lg hover:bg-slate-100 transition-colors',
               'opacity-0 group-hover:opacity-100'
             )}
             onClick={(e) => {
@@ -165,16 +165,16 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
               setShowActions(!showActions);
             }}
           >
-            <MoreHorizontal className="w-4 h-4" />
+            <MoreHorizontal className="w-4 h-4 text-slate-700" />
           </button>
 
           {/* Actions Dropdown */}
           {showActions && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-background border border-border rounded-md shadow-lg z-10">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
               <div className="py-1">
                 {onEdit && (
                   <button
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-muted text-left"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-slate-50 text-left text-slate-800"
                     onClick={(e) => handleActionClick(e, () => onEdit(document))}
                   >
                     <Edit className="w-4 h-4" />
@@ -183,7 +183,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 )}
                 {onDuplicate && (
                   <button
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-muted text-left"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-slate-50 text-left text-slate-800"
                     onClick={(e) => handleActionClick(e, () => onDuplicate(document))}
                   >
                     <Copy className="w-4 h-4" />
@@ -192,7 +192,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 )}
                 {onShare && (
                   <button
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-muted text-left"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-slate-50 text-left text-slate-800"
                     onClick={(e) => handleActionClick(e, () => onShare(document))}
                   >
                     <Share className="w-4 h-4" />
@@ -201,7 +201,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 )}
                 {onDelete && (
                   <button
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-muted text-destructive text-left"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-red-50 text-red-600 text-left"
                     onClick={(e) => handleActionClick(e, () => onDelete(document.id))}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -216,13 +216,13 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
       {/* Description */}
       {document.description && (
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+        <p className="text-sm text-slate-600 mb-4 line-clamp-2">
           {document.description}
         </p>
       )}
 
       {/* Stats */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-xs text-slate-600">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1">
             <FileText className="w-3 h-3" />
@@ -246,13 +246,13 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           {document.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded-full"
+              className="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded-full"
             >
               {tag}
             </span>
           ))}
           {document.tags.length > 3 && (
-            <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded-full">
+            <span className="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded-full">
               +{document.tags.length - 3}
             </span>
           )}
