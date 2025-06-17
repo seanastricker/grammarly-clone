@@ -1,0 +1,285 @@
+/**
+ * @fileoverview Global styles with Material Design 3 theme variables
+ * @author WordWise AI Team
+ * @version 1.0.0
+ * 
+ * Global CSS with Material Design 3 color tokens, typography, and component styles.
+ * Includes light/dark theme support and Tailwind CSS base imports.
+ */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ============================================================================
+   Material Design 3 Design Tokens
+   ============================================================================ */
+
+:root {
+  /* Light Theme Colors */
+  --background: 254 247 255; /* #fef7ff */
+  --foreground: 29 27 32; /* #1d1b20 */
+  
+  --card: 254 247 255; /* #fef7ff */
+  --card-foreground: 29 27 32; /* #1d1b20 */
+  
+  --popover: 254 247 255; /* #fef7ff */
+  --popover-foreground: 29 27 32; /* #1d1b20 */
+  
+  /* Primary Colors */
+  --primary: 103 80 164; /* #6750a4 */
+  --primary-foreground: 255 255 255; /* #ffffff */
+  --primary-container: 234 221 255; /* #eaddff */
+  --primary-container-foreground: 33 0 93; /* #21005d */
+  
+  /* Secondary Colors */
+  --secondary: 98 91 113; /* #625b71 */
+  --secondary-foreground: 255 255 255; /* #ffffff */
+  --secondary-container: 231 224 249; /* #e7e0f9 */
+  --secondary-container-foreground: 30 25 43; /* #1e192b */
+  
+  /* Tertiary Colors */
+  --tertiary: 125 82 96; /* #7d5260 */
+  --tertiary-foreground: 255 255 255; /* #ffffff */
+  --tertiary-container: 255 216 228; /* #ffd8e4 */
+  --tertiary-container-foreground: 49 16 29; /* #31101d */
+  
+  /* Surface Colors */
+  --surface: 254 247 255; /* #fef7ff */
+  --surface-foreground: 29 27 32; /* #1d1b20 */
+  --surface-variant: 231 224 236; /* #e7e0ec */
+  --surface-variant-foreground: 73 69 79; /* #49454f */
+  
+  /* Outline Colors */
+  --outline: 121 116 126; /* #79747e */
+  --outline-variant: 202 196 208; /* #cac4d0 */
+  
+  /* State Colors */
+  --error: 186 26 26; /* #ba1a1a */
+  --error-foreground: 255 255 255; /* #ffffff */
+  --error-container: 255 218 214; /* #ffdad6 */
+  --error-container-foreground: 65 0 2; /* #410002 */
+  
+  --warning: 255 143 0; /* #ff8f00 */
+  --warning-foreground: 255 255 255; /* #ffffff */
+  --warning-container: 255 228 191; /* #ffe4bf */
+  --warning-container-foreground: 51 29 0; /* #331d00 */
+  
+  --success: 56 142 60; /* #388e3c */
+  --success-foreground: 255 255 255; /* #ffffff */
+  --success-container: 200 230 201; /* #c8e6c9 */
+  --success-container-foreground: 14 53 16; /* #0e3510 */
+  
+  /* UI Element Colors */
+  --muted: 231 224 236; /* #e7e0ec */
+  --muted-foreground: 73 69 79; /* #49454f */
+  
+  --accent: 103 80 164; /* #6750a4 */
+  --accent-foreground: 255 255 255; /* #ffffff */
+  
+  --destructive: 186 26 26; /* #ba1a1a */
+  --destructive-foreground: 255 255 255; /* #ffffff */
+  
+  --border: 202 196 208; /* #cac4d0 */
+  --input: 231 224 236; /* #e7e0ec */
+  --ring: 103 80 164; /* #6750a4 */
+}
+
+.dark {
+  /* Dark Theme Colors */
+  --background: 20 18 24; /* #141218 */
+  --foreground: 230 224 233; /* #e6e0e9 */
+  
+  --card: 20 18 24; /* #141218 */
+  --card-foreground: 230 224 233; /* #e6e0e9 */
+  
+  --popover: 20 18 24; /* #141218 */
+  --popover-foreground: 230 224 233; /* #e6e0e9 */
+  
+  /* Primary Colors */
+  --primary: 208 188 255; /* #d0bcff */
+  --primary-foreground: 54 24 116; /* #36177c */
+  --primary-container: 79 55 139; /* #4f378b */
+  --primary-container-foreground: 234 221 255; /* #eaddff */
+  
+  /* Secondary Colors */
+  --secondary: 204 196 220; /* #ccc2dc */
+  --secondary-foreground: 52 47 64; /* #342f40 */
+  --secondary-container: 74 68 88; /* #4a4458 */
+  --secondary-container-foreground: 231 224 249; /* #e7e0f9 */
+  
+  /* Tertiary Colors */
+  --tertiary: 239 184 200; /* #efb8c8 */
+  --tertiary-foreground: 73 37 50; /* #492532 */
+  --tertiary-container: 99 59 73; /* #633b49 */
+  --tertiary-container-foreground: 255 216 228; /* #ffd8e4 */
+  
+  /* Surface Colors */
+  --surface: 20 18 24; /* #141218 */
+  --surface-foreground: 230 224 233; /* #e6e0e9 */
+  --surface-variant: 73 69 79; /* #49454f */
+  --surface-variant-foreground: 202 196 208; /* #cac4d0 */
+  
+  /* Outline Colors */
+  --outline: 147 143 153; /* #938f99 */
+  --outline-variant: 73 69 79; /* #49454f */
+  
+  /* State Colors */
+  --error: 255 180 171; /* #ffb4ab */
+  --error-foreground: 104 11 0; /* #680100 */
+  --error-container: 147 0 10; /* #93000a */
+  --error-container-foreground: 255 218 214; /* #ffdad6 */
+  
+  --warning: 255 204 128; /* #ffcc80 */
+  --warning-foreground: 77 42 0; /* #4d2a00 */
+  --warning-container: 115 64 0; /* #734000 */
+  --warning-container-foreground: 255 228 191; /* #ffe4bf */
+  
+  --success: 165 214 167; /* #a5d6a7 */
+  --success-foreground: 0 57 0; /* #003900 */
+  --success-container: 27 94 32; /* #1b5e20 */
+  --success-container-foreground: 200 230 201; /* #c8e6c9 */
+  
+  /* UI Element Colors */
+  --muted: 73 69 79; /* #49454f */
+  --muted-foreground: 202 196 208; /* #cac4d0 */
+  
+  --accent: 208 188 255; /* #d0bcff */
+  --accent-foreground: 54 24 116; /* #36177c */
+  
+  --destructive: 255 180 171; /* #ffb4ab */
+  --destructive-foreground: 104 11 0; /* #680100 */
+  
+  --border: 73 69 79; /* #49454f */
+  --input: 73 69 79; /* #49454f */
+  --ring: 208 188 255; /* #d0bcff */
+}
+
+/* ============================================================================
+   Base Styles
+   ============================================================================ */
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* ============================================================================
+   Typography
+   ============================================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.25rem; /* 36px */
+  line-height: 2.75rem; /* 44px */
+}
+
+h2 {
+  font-size: 1.875rem; /* 30px */
+  line-height: 2.25rem; /* 36px */
+}
+
+h3 {
+  font-size: 1.5rem; /* 24px */
+  line-height: 2rem; /* 32px */
+}
+
+h4 {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.75rem; /* 28px */
+}
+
+h5 {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75rem; /* 28px */
+}
+
+h6 {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+}
+
+/* ============================================================================
+   Focus and Interaction States
+   ============================================================================ */
+
+/* Focus visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for interactive elements */
+button, input, select, textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Selection colors */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
+}
+
+/* ============================================================================
+   Scrollbar Styling
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.7);
+}
+
+/* ============================================================================
+   Animation Preferences
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+} 

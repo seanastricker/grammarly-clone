@@ -1,0 +1,47 @@
+/**
+ * @fileoverview Main application entry point
+ * @author WordWise AI Team
+ * @version 1.0.0
+ * 
+ * React 18 application entry with strict mode and global providers.
+ * Initializes the WordWise AI writing assistant with theme, auth, and error boundaries.
+ */
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
+
+import App from './App.tsx';
+import { Providers } from './app/providers';
+import { ErrorFallback } from '@/components/atoms/error-fallback';
+
+import './app/globals.css';
+
+/**
+ * Global error handler for unhandled errors
+ * Reports errors to monitoring service and provides user feedback
+ */
+function handleError(error: Error, errorInfo: any) {
+  console.error('Application error:', error, errorInfo);
+  // TODO: Report to Sentry in production
+}
+
+/**
+ * Root application render
+ * Wrapped with providers, error boundaries, and routing
+ */
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={handleError}
+    >
+      <BrowserRouter>
+        <Providers>
+          <App />
+        </Providers>
+      </BrowserRouter>
+    </ErrorBoundary>
+  </React.StrictMode>,
+); 
