@@ -15,155 +15,147 @@
    ============================================================================ */
 
 :root {
-  /* Light Theme Colors - Clean Gray Background with ALL BLACK TEXT */
-  --background: 249 250 251; /* #f9fafb - Clean gray background */
-  --foreground: 0 0 0; /* #000000 - Pure black text EVERYWHERE */
+  /* Modern Web App Color Scheme - Clean & Professional */
+  --background: 255 255 255; /* Pure white background */
+  --foreground: 15 23 42; /* Slate-900 - Dark text for excellent readability */
   
-  --card: 255 255 255; /* #ffffff - White cards */
-  --card-foreground: 0 0 0; /* #000000 - Black text on cards */
+  --card: 255 255 255; /* White cards */
+  --card-foreground: 15 23 42; /* Dark text on cards */
   
-  --popover: 255 255 255; /* #ffffff */
-  --popover-foreground: 0 0 0; /* #000000 - Black text */
+  --popover: 255 255 255; /* White popover */
+  --popover-foreground: 15 23 42; /* Dark text */
   
-  /* Primary Colors - Keep green but with black text */
-  --primary: 21 195 154; /* #15C39A - Grammarly's signature green */
-  --primary-foreground: 0 0 0; /* #000000 - BLACK text on green */
-  --primary-container: 220 252 231; /* #dcfce7 - Light green background */
-  --primary-container-foreground: 0 0 0; /* #000000 - Black text */
+  /* Primary Brand Colors - Professional Blue */
+  --primary: 59 130 246; /* Blue-500 - Modern, professional primary */
+  --primary-foreground: 255 255 255; /* White text on primary */
+  --primary-container: 239 246 255; /* Blue-50 - Very light blue background */
+  --primary-container-foreground: 30 64 175; /* Blue-800 - Dark blue text */
   
-  /* Secondary Colors - All black text */
-  --secondary: 107 114 128; /* #6b7280 - Medium gray */
-  --secondary-foreground: 0 0 0; /* #000000 - Black text */
-  --secondary-container: 249 250 251; /* #f9fafb - Very light gray */
-  --secondary-container-foreground: 0 0 0; /* #000000 - Black text */
+  /* Secondary Colors - Clean Gray Scale */
+  --secondary: 71 85 105; /* Slate-600 - Medium gray */
+  --secondary-foreground: 255 255 255; /* White text on secondary */
+  --secondary-container: 248 250 252; /* Slate-50 - Very light gray */
+  --secondary-container-foreground: 30 41 59; /* Slate-800 - Dark gray text */
   
-  /* Tertiary Colors - All black text */
-  --tertiary: 59 130 246; /* #3b82f6 - Professional blue */
-  --tertiary-foreground: 0 0 0; /* #000000 - Black text */
-  --tertiary-container: 239 246 255; /* #eff6ff - Light blue */
-  --tertiary-container-foreground: 0 0 0; /* #000000 - Black text */
+  /* Tertiary Colors - Subtle Accent */
+  --tertiary: 99 102 241; /* Indigo-500 - Subtle accent color */
+  --tertiary-foreground: 255 255 255; /* White text on tertiary */
+  --tertiary-container: 238 242 255; /* Indigo-50 - Light indigo background */
+  --tertiary-container-foreground: 67 56 202; /* Indigo-700 - Dark indigo text */
   
-  /* Surface Colors - All black text */
-  --surface: 255 255 255; /* #ffffff */
-  --surface-foreground: 0 0 0; /* #000000 - Black text */
-  --surface-variant: 248 250 252; /* #f8fafc - Very light gray surface */
-  --surface-variant-foreground: 0 0 0; /* #000000 - Black text */
+  /* Surface Colors */
+  --surface: 255 255 255; /* White surface */
+  --surface-foreground: 15 23 42; /* Dark text on surface */
+  --surface-variant: 241 245 249; /* Slate-100 - Light gray surface */
+  --surface-variant-foreground: 51 65 85; /* Slate-700 - Medium dark text */
   
-  /* Outline Colors */
-  --outline: 209 213 219; /* #d1d5db - Light gray borders */
-  --outline-variant: 243 244 246; /* #f3f4f6 - Very light borders */
+  /* Border Colors */
+  --outline: 203 213 225; /* Slate-300 - Light borders */
+  --outline-variant: 226 232 240; /* Slate-200 - Very light borders */
   
-  /* State Colors - NO YELLOW, use black text */
-  --error: 239 68 68; /* #ef4444 - Professional red */
-  --error-foreground: 0 0 0; /* #000000 - Black text */
-  --error-container: 254 242 242; /* #fef2f2 - Light red background */
-  --error-container-foreground: 0 0 0; /* #000000 - Black text */
+  /* Status Colors - Professional & Clear */
+  --error: 220 38 38; /* Red-600 - Clear error red */
+  --error-foreground: 255 255 255; /* White text on error */
+  --error-container: 254 242 242; /* Red-50 - Light red background */
+  --error-container-foreground: 153 27 27; /* Red-800 - Dark red text */
   
-  /* WARNING - CHANGED FROM YELLOW TO BLACK */
-  --warning: 0 0 0; /* #000000 - BLACK instead of yellow */
-  --warning-foreground: 255 255 255; /* #ffffff - White background for contrast */
-  --warning-container: 255 255 255; /* #ffffff - White background */
-  --warning-container-foreground: 0 0 0; /* #000000 - Black text */
+  --warning: 217 119 6; /* Amber-600 - Professional warning orange */
+  --warning-foreground: 255 255 255; /* White text on warning */
+  --warning-container: 255 251 235; /* Amber-50 - Light amber background */
+  --warning-container-foreground: 146 64 14; /* Amber-800 - Dark amber text */
   
-  --success: 16 185 129; /* #10b981 - Success green */
-  --success-foreground: 0 0 0; /* #000000 - Black text */
-  --success-container: 236 253 245; /* #ecfdf5 - Light success green */
-  --success-container-foreground: 0 0 0; /* #000000 - Black text */
+  --success: 22 163 74; /* Green-600 - Success green */
+  --success-foreground: 255 255 255; /* White text on success */
+  --success-container: 240 253 244; /* Green-50 - Light green background */
+  --success-container-foreground: 22 101 52; /* Green-800 - Dark green text */
   
-  /* UI Element Colors - All black text */
-  --muted: 248 250 252; /* #f8fafc - Light gray background */
-  --muted-foreground: 0 0 0; /* #000000 - Black text */
+  /* UI Element Colors */
+  --muted: 248 250 252; /* Slate-50 - Muted background */
+  --muted-foreground: 100 116 139; /* Slate-500 - Muted text */
   
-  --accent: 0 0 0; /* #000000 - BLACK accent color */
-  --accent-foreground: 255 255 255; /* #ffffff - White for contrast */
+  --accent: 99 102 241; /* Indigo-500 - Accent color */
+  --accent-foreground: 255 255 255; /* White text on accent */
   
-  --destructive: 239 68 68; /* #ef4444 - Red for destructive actions */
-  --destructive-foreground: 0 0 0; /* #000000 - Black text */
+  --destructive: 220 38 38; /* Red-600 - Destructive actions */
+  --destructive-foreground: 255 255 255; /* White text on destructive */
   
-  --border: 229 231 235; /* #e5e7eb - Light gray borders */
-  --input: 255 255 255; /* #ffffff - White input background */
-  --ring: 0 0 0; /* #000000 - BLACK focus ring */
+  --border: 226 232 240; /* Slate-200 - Standard borders */
+  --input: 255 255 255; /* White input backgrounds */
+  --ring: 59 130 246; /* Blue-500 - Focus ring color */
   
   /* Shadow Variables */
-  --shadow: 0 0 0; /* Base shadow color */
+  --shadow: 15 23 42; /* Dark shadow base */
 }
 
 .dark {
-  /* Dark Theme Colors - Dark purple with white text */
-  --background: 30 20 60; /* #1e143c - Dark purple background */
-  --foreground: 255 255 255; /* #ffffff - White text in dark mode */
+  /* Dark Mode - Professional Dark Theme */
+  --background: 15 23 42; /* Slate-900 - Dark background */
+  --foreground: 248 250 252; /* Slate-50 - Light text */
   
-  --card: 45 30 75; /* #2d1e4b - Dark purple cards */
-  --card-foreground: 255 255 255; /* #ffffff - White text on cards */
+  --card: 30 41 59; /* Slate-800 - Dark cards */
+  --card-foreground: 248 250 252; /* Light text on dark cards */
   
-  --popover: 45 30 75; /* #2d1e4b */
-  --popover-foreground: 255 255 255; /* #ffffff */
+  --popover: 30 41 59; /* Slate-800 - Dark popover */
+  --popover-foreground: 248 250 252; /* Light text */
   
   /* Primary Colors in Dark Mode */
-  --primary: 34 197 94; /* #22c55e - Brighter green for dark mode */
-  --primary-foreground: 0 0 0; /* #000000 - Black text on green */
-  --primary-container: 21 128 61; /* #15803d - Darker green background */
-  --primary-container-foreground: 255 255 255; /* #ffffff - White text */
+  --primary: 96 165 250; /* Blue-400 - Brighter blue for dark mode */
+  --primary-foreground: 15 23 42; /* Dark text on bright primary */
+  --primary-container: 30 58 138; /* Blue-800 - Dark blue background */
+  --primary-container-foreground: 147 197 253; /* Blue-300 - Light blue text */
   
-  /* Secondary Colors */
-  --secondary: 156 163 175; /* #9ca3af - Light gray */
-  --secondary-foreground: 0 0 0; /* #000000 - Black text */
-  --secondary-container: 55 65 81; /* #374151 - Dark gray background */
-  --secondary-container-foreground: 255 255 255; /* #ffffff - White text */
+  /* Secondary Colors in Dark Mode */
+  --secondary: 148 163 184; /* Slate-400 - Light gray for dark mode */
+  --secondary-foreground: 15 23 42; /* Dark text on light secondary */
+  --secondary-container: 51 65 85; /* Slate-700 - Medium dark background */
+  --secondary-container-foreground: 203 213 225; /* Slate-300 - Light gray text */
   
-  /* Tertiary Colors */
-  --tertiary: 96 165 250; /* #60a5fa - Lighter blue for dark mode */
-  --tertiary-foreground: 0 0 0; /* #000000 - Black text */
-  --tertiary-container: 30 58 138; /* #1e3a8a - Dark blue background */
-  --tertiary-container-foreground: 255 255 255; /* #ffffff - White text */
+  /* Surface Colors in Dark Mode */
+  --surface: 15 23 42; /* Slate-900 - Dark surface */
+  --surface-foreground: 248 250 252; /* Light text */
+  --surface-variant: 51 65 85; /* Slate-700 - Dark variant surface */
+  --surface-variant-foreground: 203 213 225; /* Slate-300 - Light variant text */
   
-  /* Surface Colors */
-  --surface: 30 20 60; /* #1e143c */
-  --surface-foreground: 255 255 255; /* #ffffff */
-  --surface-variant: 55 45 85; /* #372d55 - Dark purple surface */
-  --surface-variant-foreground: 255 255 255; /* #ffffff - White text */
+  /* Borders in Dark Mode */
+  --outline: 71 85 105; /* Slate-600 - Medium borders */
+  --outline-variant: 51 65 85; /* Slate-700 - Dark borders */
   
-  /* Outline Colors */
-  --outline: 75 85 99; /* #4b5563 - Medium gray borders */
-  --outline-variant: 55 65 81; /* #374151 - Dark gray borders */
+  /* Status Colors in Dark Mode */
+  --error: 248 113 113; /* Red-400 - Softer red for dark mode */
+  --error-foreground: 15 23 42; /* Dark text on error */
+  --error-container: 127 29 29; /* Red-900 - Dark red background */
+  --error-container-foreground: 252 165 165; /* Red-300 - Light red text */
   
-  /* State Colors in Dark Mode */
-  --error: 248 113 113; /* #f87171 - Softer red for dark mode */
-  --error-foreground: 0 0 0; /* #000000 - Black text */
-  --error-container: 153 27 27; /* #991b1b - Dark red background */
-  --error-container-foreground: 255 255 255; /* #ffffff - White text */
+  --warning: 251 191 36; /* Amber-400 - Bright amber for dark mode */
+  --warning-foreground: 15 23 42; /* Dark text on warning */
+  --warning-container: 120 53 15; /* Amber-900 - Dark amber background */
+  --warning-container-foreground: 252 211 77; /* Amber-300 - Light amber text */
   
-  /* WARNING - BLACK in dark mode too */
-  --warning: 255 255 255; /* #ffffff - White in dark mode */
-  --warning-foreground: 0 0 0; /* #000000 - Black text */
-  --warning-container: 146 64 14; /* #92400e - Dark background */
-  --warning-container-foreground: 255 255 255; /* #ffffff - White text */
+  --success: 74 222 128; /* Green-400 - Bright success for dark mode */
+  --success-foreground: 15 23 42; /* Dark text on success */
+  --success-container: 20 83 45; /* Green-900 - Dark green background */
+  --success-container-foreground: 134 239 172; /* Green-300 - Light green text */
   
-  --success: 52 211 153; /* #34d399 - Brighter success green */
-  --success-foreground: 0 0 0; /* #000000 - Black text */
-  --success-container: 5 150 105; /* #059669 - Dark success background */
-  --success-container-foreground: 255 255 255; /* #ffffff - White text */
+  /* UI Elements in Dark Mode */
+  --muted: 51 65 85; /* Slate-700 - Dark muted background */
+  --muted-foreground: 148 163 184; /* Slate-400 - Light muted text */
   
-  /* UI Element Colors */
-  --muted: 55 45 85; /* #372d55 - Dark purple background */
-  --muted-foreground: 255 255 255; /* #ffffff - White text in dark mode */
+  --accent: 129 140 248; /* Indigo-400 - Bright accent for dark mode */
+  --accent-foreground: 15 23 42; /* Dark text on accent */
   
-  --accent: 255 255 255; /* #ffffff - White accent in dark mode */
-  --accent-foreground: 0 0 0; /* #000000 - Black text */
+  --destructive: 248 113 113; /* Red-400 - Destructive in dark mode */
+  --destructive-foreground: 15 23 42; /* Dark text on destructive */
   
-  --destructive: 248 113 113; /* #f87171 - Same as error */
-  --destructive-foreground: 0 0 0; /* #000000 - Black text */
-  
-  --border: 75 85 99; /* #4b5563 - Medium gray borders */
-  --input: 55 45 85; /* #372d55 - Dark purple input background */
-  --ring: 255 255 255; /* #ffffff - White focus ring in dark mode */
+  --border: 71 85 105; /* Slate-600 - Dark borders */
+  --input: 51 65 85; /* Slate-700 - Dark input backgrounds */
+  --ring: 96 165 250; /* Blue-400 - Bright focus ring */
   
   /* Shadow Variables */
-  --shadow: 255 255 255; /* Light shadow for dark mode */
+  --shadow: 0 0 0; /* Light shadow for dark mode */
 }
 
 /* ============================================================================
-   Base Styles - FORCE BLACK TEXT
+   Base Styles - Modern Typography & Layout
    ============================================================================ */
 
 * {
@@ -171,19 +163,47 @@
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground)) !important; /* Force black text */
   font-feature-settings: "rlig" 1, "calt" 1;
   font-smooth: always;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'sans-serif';
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  line-height: 1.6;
 }
 
-/* Force all text elements to be black */
-h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, label {
-  color: hsl(var(--foreground)) !important;
+/* Modern Typography Scale */
+h1, h2, h3, h4, h5, h6 {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
 }
+
+p, span, div, a, button, label {
+  color: hsl(var(--foreground));
+}
+
+/* Muted text for secondary content */
+.text-muted {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Ensure proper contrast for form elements */
+input, textarea, select {
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: hsl(var(--ring));
+  outline: 2px solid hsl(var(--ring) / 0.2);
+  outline-offset: 2px;
+}
+
+/* Allow Tailwind color utilities to work */
 
 /* ============================================================================
    Modern Animations & Transitions
@@ -268,103 +288,130 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, label {
    Enhanced Visual Effects - Grammarly Style
    ============================================================================ */
 
-/* Subtle card shadows like Grammarly */
+/* Modern Shadow System */
 .shadow-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 
+    0 1px 3px 0 rgba(15, 23, 42, 0.1),
+    0 1px 2px -1px rgba(15, 23, 42, 0.1);
 }
 
 .shadow-card-hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    0 4px 6px -1px rgba(15, 23, 42, 0.1),
+    0 2px 4px -2px rgba(15, 23, 42, 0.1);
 }
 
 .shadow-floating {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 
+    0 10px 15px -3px rgba(15, 23, 42, 0.1),
+    0 4px 6px -4px rgba(15, 23, 42, 0.1);
+}
+
+/* Enhanced shadow for dropdowns and modals */
+.shadow-dropdown {
+  box-shadow: 
+    0 20px 25px -5px rgba(15, 23, 42, 0.1),
+    0 8px 10px -6px rgba(15, 23, 42, 0.1);
 }
 
 /* Dark mode shadows */
 .dark .shadow-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px -1px rgba(0, 0, 0, 0.3);
 }
 
 .dark .shadow-card-hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.4),
+    0 2px 4px -2px rgba(0, 0, 0, 0.4);
 }
 
 .dark .shadow-floating {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    0 4px 6px -4px rgba(0, 0, 0, 0.5);
+}
+
+.dark .shadow-dropdown {
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.6),
+    0 8px 10px -6px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================================================
-   Typography - ALL BLACK TEXT
+   Typography - Modern & Clean
    ============================================================================ */
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.025em;
-  color: hsl(var(--foreground)) !important; /* Force black */
-}
-
+/* Headings */
 h1 {
   font-size: 2.25rem; /* 36px */
-  line-height: 2.5rem; /* 40px */
-  color: hsl(var(--foreground)) !important; /* Force black */
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 h2 {
   font-size: 1.875rem; /* 30px */
-  line-height: 2.25rem; /* 36px */
-  color: hsl(var(--foreground)) !important; /* Force black */
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 h3 {
   font-size: 1.5rem; /* 24px */
-  line-height: 2rem; /* 32px */
-  color: hsl(var(--foreground)) !important; /* Force black */
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 h4 {
   font-size: 1.25rem; /* 20px */
-  line-height: 1.75rem; /* 28px */
-  color: hsl(var(--foreground)) !important; /* Force black */
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 h5 {
   font-size: 1.125rem; /* 18px */
-  line-height: 1.75rem; /* 28px */
-  color: hsl(var(--foreground)) !important; /* Force black */
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 h6 {
   font-size: 1rem; /* 16px */
-  line-height: 1.5rem; /* 24px */
-  color: hsl(var(--foreground)) !important; /* Force black */
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-/* Body text styles - ALL BLACK */
+/* Body text styles */
 .text-body {
   font-size: 1rem;
-  line-height: 1.5;
-  color: hsl(var(--foreground)) !important; /* Force black */
+  line-height: 1.6;
+  color: hsl(var(--foreground));
 }
 
 .text-body-secondary {
   font-size: 0.875rem;
   line-height: 1.5;
-  color: hsl(var(--foreground)) !important; /* Force black */
+  color: hsl(var(--muted-foreground));
 }
 
-/* Override any gradient text to be black */
-.bg-gradient-to-r {
-  background: none !important;
-  color: hsl(var(--foreground)) !important; /* Force black */
-  -webkit-background-clip: unset !important;
-  background-clip: unset !important;
-  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
 }
 
-.text-transparent {
-  color: hsl(var(--foreground)) !important; /* Force black instead of transparent */
+/* Link styles */
+a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: hsl(var(--primary) / 0.8);
+  text-decoration: underline;
 }
 
 /* ============================================================================
@@ -381,7 +428,6 @@ h6 {
 /* Smooth transitions for interactive elements */
 button, input, select, textarea, a {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  color: hsl(var(--foreground)) !important; /* Force black text */
 }
 
 /* Subtle button hover effects */
@@ -396,30 +442,13 @@ button:active:not(:disabled) {
 /* Selection colors */
 ::selection {
   background-color: hsl(var(--primary) / 0.2);
-  color: hsl(var(--foreground)) !important; /* Force black text */
 }
 
 /* ============================================================================
    Form Elements - ALL BLACK TEXT
    ============================================================================ */
 
-input, textarea, select {
-  border-radius: 8px;
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--input));
-  color: hsl(var(--foreground)) !important; /* Force black text */
-  font-size: 0.875rem;
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
-  color: hsl(var(--foreground)) !important; /* Force black text */
-}
-
-input::placeholder, textarea::placeholder {
-  color: hsl(var(--foreground) / 0.5) !important; /* Force black placeholder */
-}
+/* Form element base styles - let Tailwind handle specifics */
 
 /* ============================================================================
    Scrollbar Styling - Clean and Minimal

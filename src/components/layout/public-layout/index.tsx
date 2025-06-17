@@ -27,23 +27,23 @@ interface PublicLayoutProps {
  */
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Public header/navigation */}
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="font-bold text-xl text-primary">
+          <div className="font-bold text-xl text-emerald-600">
             WordWise AI
           </div>
           <nav className="flex items-center space-x-4">
             <a 
               href="/login" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               Sign In
             </a>
             <a 
               href="/signup" 
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
             >
               Get Started
             </a>
@@ -52,14 +52,14 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
       </header>
 
       {/* Main content */}
-      <main>
+      <main className="flex-1">
         {children}
       </main>
 
       {/* Public footer */}
-      <footer className="border-t border-border bg-muted/50 mt-auto">
+      <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-muted-foreground">
+          <div className="text-center text-gray-600">
             <p>&copy; 2024 WordWise AI. All rights reserved.</p>
           </div>
         </div>

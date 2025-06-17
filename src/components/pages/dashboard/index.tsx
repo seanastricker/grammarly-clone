@@ -127,7 +127,7 @@ export const DashboardPage: React.FC = () => {
   const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Writer';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100/20 to-gray-50">
       {/* Header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-tertiary/10" />

@@ -40,11 +40,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-gray-50">
       {/* Auth header/navigation */}
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="font-bold text-xl text-primary">
+          <div className="font-bold text-xl text-emerald-600">
             WordWise AI
           </div>
           
@@ -52,19 +52,19 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           <nav className="flex items-center space-x-6">
             <a 
               href="/dashboard" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               Dashboard
             </a>
             <a 
               href="/editor" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               Editor
             </a>
             <a 
               href="/settings" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
             >
               Settings
             </a>
@@ -73,18 +73,18 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           {/* User menu */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-primary-foreground" />
+              <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-gray-900">
                 {user?.displayName || user?.email || 'User'}
               </span>
             </div>
             <button
               onClick={handleLogout}
               className="flex items-center space-x-1 px-3 py-2 text-sm 
-                         text-muted-foreground hover:text-foreground 
-                         hover:bg-muted rounded-md transition-colors"
+                         text-gray-600 hover:text-gray-900 
+                         hover:bg-gray-100 rounded-md transition-colors"
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
@@ -95,8 +95,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       </header>
 
       {/* Main content */}
-      <main className="flex-1">
-        {children}
+      <main className="flex-1 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );
