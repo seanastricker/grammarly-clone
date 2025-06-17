@@ -13,6 +13,8 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import { EditorToolbar } from './toolbar';
+import { GrammarHighlight, applyGrammarHighlights, clearGrammarHighlights } from './grammar-highlight-extension';
+import type { AnalyzedError } from '@/services/ai/language-tool';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -21,6 +23,9 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   editable?: boolean;
+  enableGrammarCheck?: boolean;
+  onGrammarAnalysis?: (errors: AnalyzedError[], statistics: any) => void;
+  currentErrors?: AnalyzedError[]; // Current errors from parent (after user actions)
 }
 
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -28,8 +33,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onUpdate,
   placeholder = 'Start writing...',
   className,
-  editable = true
+  editable = true,
+  enableGrammarCheck = false,
+  onGrammarAnalysis,
+  currentErrors = []
 }) => {
+  // Track when we're applying highlights to prevent triggering grammar analysis
+  const isApplyingHighlightsRef = React.useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -49,17 +60,25 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      // Add grammar highlighting extension
+      GrammarHighlight,
     ],
     content,
     editable,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
+      
+      // Only trigger onUpdate if we're not currently applying highlights
+      if (!isApplyingHighlightsRef.current) {
       onUpdate(html);
+      } else {
+        console.log('🔧 Skipping onUpdate - applying highlights');
+      }
     },
     editorProps: {
       attributes: {
         class: cn(
-          'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto focus:outline-none',
+          'prose prose-sm sm:prose lg:prose-xl mx-auto focus:outline-none',
           'min-h-[500px] p-6',
           'prose-headings:text-foreground prose-p:text-foreground',
           'prose-strong:text-foreground prose-em:text-foreground',
@@ -85,9 +104,63 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Update content when prop changes
   React.useEffect(() => {
     if (editor && content !== editor.getHTML()) {
+      isApplyingHighlightsRef.current = true;
       editor.commands.setContent(content, false);
+      // Reset the flag after a brief delay to allow the editor to settle
+      setTimeout(() => {
+        isApplyingHighlightsRef.current = false;
+      }, 10);
     }
   }, [editor, content]);
+
+  // Apply grammar highlights when errors change
+  React.useEffect(() => {
+    if (!editor) return;
+
+    console.log('🔧 HIGHLIGHT EFFECT TRIGGERED:', {
+      enableGrammarCheck,
+      currentErrorsLength: currentErrors.length,
+      currentErrorIds: currentErrors.map(e => e.id),
+      editorExists: !!editor
+    });
+
+    console.log('🔧 FULL ERROR DETAILS:', currentErrors.map(e => ({
+      id: e.id,
+      type: e.type,
+      position: e.position,
+      message: e.shortMessage
+    })));
+
+    // Set the flag to prevent onUpdate during highlight operations
+    isApplyingHighlightsRef.current = true;
+
+    // Async function to handle highlight operations
+    const applyHighlights = async () => {
+      try {
+        if (enableGrammarCheck && currentErrors.length > 0) {
+          console.log('🔧 Applying highlights:', currentErrors.length, 'current errors');
+          const plainText = editor.getText();
+          console.log('🔧 Current editor text:', plainText);
+          await applyGrammarHighlights(editor, currentErrors, plainText);
+        } else {
+          // Clear highlights when disabled or no errors
+          console.log('🔧 Clearing highlights -', !enableGrammarCheck ? 'grammar disabled' : 'no current errors');
+          await clearGrammarHighlights(editor);
+        }
+      } catch (err) {
+        console.warn('Error in highlight operations:', err);
+      } finally {
+        // Reset the flag after highlight operations complete
+        setTimeout(() => {
+          isApplyingHighlightsRef.current = false;
+          console.log('🔧 Highlight operations complete, re-enabling onUpdate');
+        }, 10);
+      }
+    };
+
+    // Execute the async highlight operations
+    applyHighlights();
+  }, [editor, currentErrors, enableGrammarCheck]);
 
   return (
     <div className={cn('border border-border rounded-lg overflow-hidden bg-background', className)}>

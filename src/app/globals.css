@@ -1,10 +1,9 @@
 /**
- * @fileoverview Global styles with Material Design 3 theme variables
+ * @fileoverview Global styles with light purple background and ALL BLACK text
  * @author WordWise AI Team
  * @version 1.0.0
  * 
- * Global CSS with Material Design 3 color tokens, typography, and component styles.
- * Includes light/dark theme support and Tailwind CSS base imports.
+ * Global CSS with light purple background and pure black text everywhere.
  */
 
 @import 'tailwindcss/base';
@@ -12,151 +11,159 @@
 @import 'tailwindcss/utilities';
 
 /* ============================================================================
-   Material Design 3 Design Tokens
+   Light Purple Theme with ALL BLACK TEXT
    ============================================================================ */
 
 :root {
-  /* Light Theme Colors */
-  --background: 254 247 255; /* #fef7ff */
-  --foreground: 29 27 32; /* #1d1b20 */
+  /* Light Theme Colors - Clean Gray Background with ALL BLACK TEXT */
+  --background: 249 250 251; /* #f9fafb - Clean gray background */
+  --foreground: 0 0 0; /* #000000 - Pure black text EVERYWHERE */
   
-  --card: 254 247 255; /* #fef7ff */
-  --card-foreground: 29 27 32; /* #1d1b20 */
+  --card: 255 255 255; /* #ffffff - White cards */
+  --card-foreground: 0 0 0; /* #000000 - Black text on cards */
   
-  --popover: 254 247 255; /* #fef7ff */
-  --popover-foreground: 29 27 32; /* #1d1b20 */
+  --popover: 255 255 255; /* #ffffff */
+  --popover-foreground: 0 0 0; /* #000000 - Black text */
   
-  /* Primary Colors */
-  --primary: 103 80 164; /* #6750a4 */
-  --primary-foreground: 255 255 255; /* #ffffff */
-  --primary-container: 234 221 255; /* #eaddff */
-  --primary-container-foreground: 33 0 93; /* #21005d */
+  /* Primary Colors - Keep green but with black text */
+  --primary: 21 195 154; /* #15C39A - Grammarly's signature green */
+  --primary-foreground: 0 0 0; /* #000000 - BLACK text on green */
+  --primary-container: 220 252 231; /* #dcfce7 - Light green background */
+  --primary-container-foreground: 0 0 0; /* #000000 - Black text */
   
-  /* Secondary Colors */
-  --secondary: 98 91 113; /* #625b71 */
-  --secondary-foreground: 255 255 255; /* #ffffff */
-  --secondary-container: 231 224 249; /* #e7e0f9 */
-  --secondary-container-foreground: 30 25 43; /* #1e192b */
+  /* Secondary Colors - All black text */
+  --secondary: 107 114 128; /* #6b7280 - Medium gray */
+  --secondary-foreground: 0 0 0; /* #000000 - Black text */
+  --secondary-container: 249 250 251; /* #f9fafb - Very light gray */
+  --secondary-container-foreground: 0 0 0; /* #000000 - Black text */
   
-  /* Tertiary Colors */
-  --tertiary: 125 82 96; /* #7d5260 */
-  --tertiary-foreground: 255 255 255; /* #ffffff */
-  --tertiary-container: 255 216 228; /* #ffd8e4 */
-  --tertiary-container-foreground: 49 16 29; /* #31101d */
+  /* Tertiary Colors - All black text */
+  --tertiary: 59 130 246; /* #3b82f6 - Professional blue */
+  --tertiary-foreground: 0 0 0; /* #000000 - Black text */
+  --tertiary-container: 239 246 255; /* #eff6ff - Light blue */
+  --tertiary-container-foreground: 0 0 0; /* #000000 - Black text */
   
-  /* Surface Colors */
-  --surface: 254 247 255; /* #fef7ff */
-  --surface-foreground: 29 27 32; /* #1d1b20 */
-  --surface-variant: 231 224 236; /* #e7e0ec */
-  --surface-variant-foreground: 73 69 79; /* #49454f */
+  /* Surface Colors - All black text */
+  --surface: 255 255 255; /* #ffffff */
+  --surface-foreground: 0 0 0; /* #000000 - Black text */
+  --surface-variant: 248 250 252; /* #f8fafc - Very light gray surface */
+  --surface-variant-foreground: 0 0 0; /* #000000 - Black text */
   
   /* Outline Colors */
-  --outline: 121 116 126; /* #79747e */
-  --outline-variant: 202 196 208; /* #cac4d0 */
+  --outline: 209 213 219; /* #d1d5db - Light gray borders */
+  --outline-variant: 243 244 246; /* #f3f4f6 - Very light borders */
   
-  /* State Colors */
-  --error: 186 26 26; /* #ba1a1a */
-  --error-foreground: 255 255 255; /* #ffffff */
-  --error-container: 255 218 214; /* #ffdad6 */
-  --error-container-foreground: 65 0 2; /* #410002 */
+  /* State Colors - NO YELLOW, use black text */
+  --error: 239 68 68; /* #ef4444 - Professional red */
+  --error-foreground: 0 0 0; /* #000000 - Black text */
+  --error-container: 254 242 242; /* #fef2f2 - Light red background */
+  --error-container-foreground: 0 0 0; /* #000000 - Black text */
   
-  --warning: 255 143 0; /* #ff8f00 */
-  --warning-foreground: 255 255 255; /* #ffffff */
-  --warning-container: 255 228 191; /* #ffe4bf */
-  --warning-container-foreground: 51 29 0; /* #331d00 */
+  /* WARNING - CHANGED FROM YELLOW TO BLACK */
+  --warning: 0 0 0; /* #000000 - BLACK instead of yellow */
+  --warning-foreground: 255 255 255; /* #ffffff - White background for contrast */
+  --warning-container: 255 255 255; /* #ffffff - White background */
+  --warning-container-foreground: 0 0 0; /* #000000 - Black text */
   
-  --success: 56 142 60; /* #388e3c */
-  --success-foreground: 255 255 255; /* #ffffff */
-  --success-container: 200 230 201; /* #c8e6c9 */
-  --success-container-foreground: 14 53 16; /* #0e3510 */
+  --success: 16 185 129; /* #10b981 - Success green */
+  --success-foreground: 0 0 0; /* #000000 - Black text */
+  --success-container: 236 253 245; /* #ecfdf5 - Light success green */
+  --success-container-foreground: 0 0 0; /* #000000 - Black text */
   
-  /* UI Element Colors */
-  --muted: 231 224 236; /* #e7e0ec */
-  --muted-foreground: 73 69 79; /* #49454f */
+  /* UI Element Colors - All black text */
+  --muted: 248 250 252; /* #f8fafc - Light gray background */
+  --muted-foreground: 0 0 0; /* #000000 - Black text */
   
-  --accent: 103 80 164; /* #6750a4 */
-  --accent-foreground: 255 255 255; /* #ffffff */
+  --accent: 0 0 0; /* #000000 - BLACK accent color */
+  --accent-foreground: 255 255 255; /* #ffffff - White for contrast */
   
-  --destructive: 186 26 26; /* #ba1a1a */
-  --destructive-foreground: 255 255 255; /* #ffffff */
+  --destructive: 239 68 68; /* #ef4444 - Red for destructive actions */
+  --destructive-foreground: 0 0 0; /* #000000 - Black text */
   
-  --border: 202 196 208; /* #cac4d0 */
-  --input: 231 224 236; /* #e7e0ec */
-  --ring: 103 80 164; /* #6750a4 */
+  --border: 229 231 235; /* #e5e7eb - Light gray borders */
+  --input: 255 255 255; /* #ffffff - White input background */
+  --ring: 0 0 0; /* #000000 - BLACK focus ring */
+  
+  /* Shadow Variables */
+  --shadow: 0 0 0; /* Base shadow color */
 }
 
 .dark {
-  /* Dark Theme Colors */
-  --background: 20 18 24; /* #141218 */
-  --foreground: 230 224 233; /* #e6e0e9 */
+  /* Dark Theme Colors - Dark purple with white text */
+  --background: 30 20 60; /* #1e143c - Dark purple background */
+  --foreground: 255 255 255; /* #ffffff - White text in dark mode */
   
-  --card: 20 18 24; /* #141218 */
-  --card-foreground: 230 224 233; /* #e6e0e9 */
+  --card: 45 30 75; /* #2d1e4b - Dark purple cards */
+  --card-foreground: 255 255 255; /* #ffffff - White text on cards */
   
-  --popover: 20 18 24; /* #141218 */
-  --popover-foreground: 230 224 233; /* #e6e0e9 */
+  --popover: 45 30 75; /* #2d1e4b */
+  --popover-foreground: 255 255 255; /* #ffffff */
   
-  /* Primary Colors */
-  --primary: 208 188 255; /* #d0bcff */
-  --primary-foreground: 54 24 116; /* #36177c */
-  --primary-container: 79 55 139; /* #4f378b */
-  --primary-container-foreground: 234 221 255; /* #eaddff */
+  /* Primary Colors in Dark Mode */
+  --primary: 34 197 94; /* #22c55e - Brighter green for dark mode */
+  --primary-foreground: 0 0 0; /* #000000 - Black text on green */
+  --primary-container: 21 128 61; /* #15803d - Darker green background */
+  --primary-container-foreground: 255 255 255; /* #ffffff - White text */
   
   /* Secondary Colors */
-  --secondary: 204 196 220; /* #ccc2dc */
-  --secondary-foreground: 52 47 64; /* #342f40 */
-  --secondary-container: 74 68 88; /* #4a4458 */
-  --secondary-container-foreground: 231 224 249; /* #e7e0f9 */
+  --secondary: 156 163 175; /* #9ca3af - Light gray */
+  --secondary-foreground: 0 0 0; /* #000000 - Black text */
+  --secondary-container: 55 65 81; /* #374151 - Dark gray background */
+  --secondary-container-foreground: 255 255 255; /* #ffffff - White text */
   
   /* Tertiary Colors */
-  --tertiary: 239 184 200; /* #efb8c8 */
-  --tertiary-foreground: 73 37 50; /* #492532 */
-  --tertiary-container: 99 59 73; /* #633b49 */
-  --tertiary-container-foreground: 255 216 228; /* #ffd8e4 */
+  --tertiary: 96 165 250; /* #60a5fa - Lighter blue for dark mode */
+  --tertiary-foreground: 0 0 0; /* #000000 - Black text */
+  --tertiary-container: 30 58 138; /* #1e3a8a - Dark blue background */
+  --tertiary-container-foreground: 255 255 255; /* #ffffff - White text */
   
   /* Surface Colors */
-  --surface: 20 18 24; /* #141218 */
-  --surface-foreground: 230 224 233; /* #e6e0e9 */
-  --surface-variant: 73 69 79; /* #49454f */
-  --surface-variant-foreground: 202 196 208; /* #cac4d0 */
+  --surface: 30 20 60; /* #1e143c */
+  --surface-foreground: 255 255 255; /* #ffffff */
+  --surface-variant: 55 45 85; /* #372d55 - Dark purple surface */
+  --surface-variant-foreground: 255 255 255; /* #ffffff - White text */
   
   /* Outline Colors */
-  --outline: 147 143 153; /* #938f99 */
-  --outline-variant: 73 69 79; /* #49454f */
+  --outline: 75 85 99; /* #4b5563 - Medium gray borders */
+  --outline-variant: 55 65 81; /* #374151 - Dark gray borders */
   
-  /* State Colors */
-  --error: 255 180 171; /* #ffb4ab */
-  --error-foreground: 104 11 0; /* #680100 */
-  --error-container: 147 0 10; /* #93000a */
-  --error-container-foreground: 255 218 214; /* #ffdad6 */
+  /* State Colors in Dark Mode */
+  --error: 248 113 113; /* #f87171 - Softer red for dark mode */
+  --error-foreground: 0 0 0; /* #000000 - Black text */
+  --error-container: 153 27 27; /* #991b1b - Dark red background */
+  --error-container-foreground: 255 255 255; /* #ffffff - White text */
   
-  --warning: 255 204 128; /* #ffcc80 */
-  --warning-foreground: 77 42 0; /* #4d2a00 */
-  --warning-container: 115 64 0; /* #734000 */
-  --warning-container-foreground: 255 228 191; /* #ffe4bf */
+  /* WARNING - BLACK in dark mode too */
+  --warning: 255 255 255; /* #ffffff - White in dark mode */
+  --warning-foreground: 0 0 0; /* #000000 - Black text */
+  --warning-container: 146 64 14; /* #92400e - Dark background */
+  --warning-container-foreground: 255 255 255; /* #ffffff - White text */
   
-  --success: 165 214 167; /* #a5d6a7 */
-  --success-foreground: 0 57 0; /* #003900 */
-  --success-container: 27 94 32; /* #1b5e20 */
-  --success-container-foreground: 200 230 201; /* #c8e6c9 */
+  --success: 52 211 153; /* #34d399 - Brighter success green */
+  --success-foreground: 0 0 0; /* #000000 - Black text */
+  --success-container: 5 150 105; /* #059669 - Dark success background */
+  --success-container-foreground: 255 255 255; /* #ffffff - White text */
   
   /* UI Element Colors */
-  --muted: 73 69 79; /* #49454f */
-  --muted-foreground: 202 196 208; /* #cac4d0 */
+  --muted: 55 45 85; /* #372d55 - Dark purple background */
+  --muted-foreground: 255 255 255; /* #ffffff - White text in dark mode */
   
-  --accent: 208 188 255; /* #d0bcff */
-  --accent-foreground: 54 24 116; /* #36177c */
+  --accent: 255 255 255; /* #ffffff - White accent in dark mode */
+  --accent-foreground: 0 0 0; /* #000000 - Black text */
   
-  --destructive: 255 180 171; /* #ffb4ab */
-  --destructive-foreground: 104 11 0; /* #680100 */
+  --destructive: 248 113 113; /* #f87171 - Same as error */
+  --destructive-foreground: 0 0 0; /* #000000 - Black text */
   
-  --border: 73 69 79; /* #49454f */
-  --input: 73 69 79; /* #49454f */
-  --ring: 208 188 255; /* #d0bcff */
+  --border: 75 85 99; /* #4b5563 - Medium gray borders */
+  --input: 55 45 85; /* #372d55 - Dark purple input background */
+  --ring: 255 255 255; /* #ffffff - White focus ring in dark mode */
+  
+  /* Shadow Variables */
+  --shadow: 255 255 255; /* Light shadow for dark mode */
 }
 
 /* ============================================================================
-   Base Styles
+   Base Styles - FORCE BLACK TEXT
    ============================================================================ */
 
 * {
@@ -165,90 +172,277 @@
 
 body {
   background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  color: hsl(var(--foreground)) !important; /* Force black text */
   font-feature-settings: "rlig" 1, "calt" 1;
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'sans-serif';
+}
+
+/* Force all text elements to be black */
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, label {
+  color: hsl(var(--foreground)) !important;
 }
 
 /* ============================================================================
-   Typography
+   Modern Animations & Transitions
+   ============================================================================ */
+
+/* Subtle fade in animation for page loads */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Apply fade-in animation to main content areas */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Staggered animation delays for lists */
+.animate-stagger-1 { animation-delay: 0.1s; }
+.animate-stagger-2 { animation-delay: 0.2s; }
+.animate-stagger-3 { animation-delay: 0.3s; }
+.animate-stagger-4 { animation-delay: 0.4s; }
+.animate-stagger-5 { animation-delay: 0.5s; }
+.animate-stagger-6 { animation-delay: 0.6s; }
+
+/* ============================================================================
+   Enhanced Visual Effects - Grammarly Style
+   ============================================================================ */
+
+/* Subtle card shadows like Grammarly */
+.shadow-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-floating {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode shadows */
+.dark .shadow-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark .shadow-card-hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.dark .shadow-floating {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================================
+   Typography - ALL BLACK TEXT
    ============================================================================ */
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 500;
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: hsl(var(--foreground)) !important; /* Force black */
 }
 
 h1 {
   font-size: 2.25rem; /* 36px */
-  line-height: 2.75rem; /* 44px */
+  line-height: 2.5rem; /* 40px */
+  color: hsl(var(--foreground)) !important; /* Force black */
 }
 
 h2 {
   font-size: 1.875rem; /* 30px */
   line-height: 2.25rem; /* 36px */
+  color: hsl(var(--foreground)) !important; /* Force black */
 }
 
 h3 {
   font-size: 1.5rem; /* 24px */
   line-height: 2rem; /* 32px */
+  color: hsl(var(--foreground)) !important; /* Force black */
 }
 
 h4 {
   font-size: 1.25rem; /* 20px */
   line-height: 1.75rem; /* 28px */
+  color: hsl(var(--foreground)) !important; /* Force black */
 }
 
 h5 {
   font-size: 1.125rem; /* 18px */
   line-height: 1.75rem; /* 28px */
+  color: hsl(var(--foreground)) !important; /* Force black */
 }
 
 h6 {
   font-size: 1rem; /* 16px */
   line-height: 1.5rem; /* 24px */
+  color: hsl(var(--foreground)) !important; /* Force black */
+}
+
+/* Body text styles - ALL BLACK */
+.text-body {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground)) !important; /* Force black */
+}
+
+.text-body-secondary {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground)) !important; /* Force black */
+}
+
+/* Override any gradient text to be black */
+.bg-gradient-to-r {
+  background: none !important;
+  color: hsl(var(--foreground)) !important; /* Force black */
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+}
+
+.text-transparent {
+  color: hsl(var(--foreground)) !important; /* Force black instead of transparent */
 }
 
 /* ============================================================================
    Focus and Interaction States
    ============================================================================ */
 
-/* Focus visible styles for keyboard navigation */
+/* Clean focus styles */
 *:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Smooth transitions for interactive elements */
-button, input, select, textarea {
-  transition: all 0.2s ease-in-out;
+button, input, select, textarea, a {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+/* Subtle button hover effects */
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 /* Selection colors */
 ::selection {
   background-color: hsl(var(--primary) / 0.2);
-  color: hsl(var(--primary-foreground));
+  color: hsl(var(--foreground)) !important; /* Force black text */
 }
 
 /* ============================================================================
-   Scrollbar Styling
+   Form Elements - ALL BLACK TEXT
+   ============================================================================ */
+
+input, textarea, select {
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground)) !important; /* Force black text */
+  font-size: 0.875rem;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+input::placeholder, textarea::placeholder {
+  color: hsl(var(--foreground) / 0.5) !important; /* Force black placeholder */
+}
+
+/* ============================================================================
+   Scrollbar Styling - Clean and Minimal
    ============================================================================ */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: hsl(var(--muted));
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.5);
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.7);
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 /* ============================================================================
@@ -282,4 +476,136 @@ button, input, select, textarea {
     font-size: 12pt;
     line-height: 1.5;
   }
+}
+
+/* ============================================================================
+   Grammar Error Highlighting - Clean and Professional
+   ============================================================================ */
+
+/* Hard reset - ensure no red styling on regular text */
+.prose p, .prose span, .prose div, .prose {
+  border-bottom: none !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  color: hsl(var(--foreground)) !important; /* Force black */
+}
+
+/* Only apply grammar error styles to elements WITH the grammar-error class */
+.grammar-error {
+  position: relative;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+  /* Reset any inherited styles first */
+  border-bottom: none !important;
+  text-decoration: none !important;
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+.grammar-error:hover {
+  background-color: hsl(var(--error) / 0.08);
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+/* Grammar error types - with BLACK text */
+.grammar-error.grammar-error-grammar {
+  border-bottom: 2px solid hsl(var(--error)) !important;
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--error));
+  text-decoration-style: wavy;
+  text-underline-offset: 2px;
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+.grammar-error.grammar-error-spelling {
+  border-bottom: 2px solid hsl(var(--error)) !important;
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--error));
+  text-decoration-style: solid;
+  text-underline-offset: 2px;
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+.grammar-error.grammar-error-style {
+  border-bottom: 2px solid hsl(var(--error)) !important;
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--error));
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+/* Error severity levels - with BLACK text */
+.grammar-error.grammar-error-error {
+  border-bottom-color: hsl(var(--error)) !important;
+  text-decoration-color: hsl(var(--error));
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+.grammar-error.grammar-error-warning {
+  border-bottom-color: hsl(var(--error)) !important; /* Use red instead of yellow */
+  text-decoration-color: hsl(var(--error));
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+.grammar-error.grammar-error-suggestion {
+  border-bottom-color: hsl(var(--primary)) !important;
+  text-decoration-color: hsl(var(--primary));
+  opacity: 0.8;
+  color: hsl(var(--foreground)) !important; /* Force black text */
+}
+
+/* Clean tooltip styles */
+.grammar-error[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground)) !important; /* Force black text */
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 4px 12px hsl(var(--shadow) / 0.15);
+  border: 1px solid hsl(var(--border));
+  max-width: 300px;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.grammar-error[title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: hsl(var(--border));
+  z-index: 1001;
+}
+
+/* Dark mode adjustments */
+.dark .grammar-error:hover {
+  background-color: hsl(var(--error) / 0.12);
+}
+
+/* Dark mode text override */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6, 
+.dark p, .dark span, .dark div, .dark a, .dark button, 
+.dark input, .dark textarea, .dark label {
+  color: hsl(var(--foreground)) !important; /* White text in dark mode */
+}
+
+/* Animation for error highlighting */
+@keyframes grammar-error-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.grammar-error-new {
+  animation: grammar-error-pulse 1s ease-in-out;
 } 

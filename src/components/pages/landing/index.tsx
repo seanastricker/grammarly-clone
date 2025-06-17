@@ -1,50 +1,116 @@
 /**
- * @fileoverview Landing page component
+ * @fileoverview Clean, modern landing page
  * @author WordWise AI Team
- * @version 1.0.0
+ * @version 7.0.0
  * 
- * Landing page for WordWise AI with hero section and value proposition.
- * TODO: Implement full landing page design and features.
+ * Simple landing page with app name, description, and authentication.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 /**
  * Landing page component
  * 
- * Main landing page for unauthenticated users.
- * Shows value proposition and sign-up call-to-action.
+ * Clean, focused design with just the essentials.
  * 
  * @component
  */
 export const LandingPage: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Sign in:', { email, password });
+    // Handle sign in logic
+  };
+
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Sign up:', { email, password, confirmPassword });
+    // Handle sign up logic
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center space-y-6">
-          <h1 className="text-display-large font-bold text-primary">
-            WordWise AI
-          </h1>
-          <p className="text-title-large text-muted-foreground">
-            Intelligent Writing Assistant
-          </p>
-          <p className="text-body-large max-w-2xl mx-auto">
-            AI-powered writing assistant with advanced grammar checking, 
-            style suggestions, and intelligent content optimization.
-          </p>
-          <div className="flex gap-4 justify-center pt-8">
-            <a
-              href="/signup"
-              className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-            >
-              Get Started
-            </a>
-            <a
-              href="/login"
-              className="inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
-            >
-              Sign In
-            </a>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        
+        {/* Single Card Container */}
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          
+          {/* App Name & Description */}
+          <div className="text-center space-y-2 mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              WordWise
+            </h1>
+            <p className="text-gray-600">
+              AI-powered writing assistant that helps you write better content.
+            </p>
+          </div>
+
+          {/* Authentication */}
+          <div>
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signin" className="mt-4">
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button type="submit" className="w-full">
+                    Sign In
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="signup" className="mt-4">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <Button type="submit" className="w-full">
+                    Sign Up
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
