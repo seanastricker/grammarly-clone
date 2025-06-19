@@ -27,7 +27,7 @@ export const LandingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, continueAsGuest } = useAuth();
 
   // Clear error when user starts typing or switches tabs
   const clearError = () => {
@@ -73,6 +73,20 @@ export const LandingPage: React.FC = () => {
       // Navigation will be handled by the App component when user state changes
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestSignIn = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await continueAsGuest();
+      // Navigation will be handled by the App component when user state changes
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Guest sign in failed');
     } finally {
       setLoading(false);
     }
@@ -299,6 +313,41 @@ export const LandingPage: React.FC = () => {
                     {loading ? 'Signing In...' : 'Sign In'}
                   </Button>
                 </form>
+                
+                {/* Guest Sign In Button */}
+                <div className="mt-4">
+                  <Button 
+                    type="button"
+                    onClick={handleGuestSignIn}
+                    className="w-full" 
+                    disabled={loading}
+                    style={{
+                      backgroundColor: '#f8fafc',
+                      color: '#64748b',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      width: '100%',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      opacity: loading ? 0.7 : 1
+                    }}
+                  >
+                    {loading ? 'Starting...' : 'Continue as a guest'}
+                  </Button>
+                  <p 
+                    className="text-center text-xs mt-2"
+                    style={{
+                      fontSize: '12px',
+                      color: '#9ca3af',
+                      textAlign: 'center',
+                      marginTop: '8px'
+                    }}
+                  >
+                    Your work won't be saved when you sign out
+                  </p>
+                </div>
               </TabsContent>
               
               <TabsContent value="signup" className="mt-4">

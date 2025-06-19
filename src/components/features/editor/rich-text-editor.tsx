@@ -40,6 +40,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   // Track when we're applying highlights to prevent triggering grammar analysis
   const isApplyingHighlightsRef = React.useRef(false);
+  // Track when user is actively typing to prevent cursor interference
+  const isUserTypingRef = React.useRef(false);
+  const typingTimeoutRef = React.useRef<NodeJS.Timeout>();
 
   const editor = useEditor({
     extensions: [
@@ -68,9 +71,18 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       
+      // Track user typing activity
+      isUserTypingRef.current = true;
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        isUserTypingRef.current = false;
+      }, 500); // Consider user done typing after 500ms of inactivity
+      
       // Only trigger onUpdate if we're not currently applying highlights
       if (!isApplyingHighlightsRef.current) {
-      onUpdate(html);
+        onUpdate(html);
       } else {
         console.log('🔧 Skipping onUpdate - applying highlights');
       }
@@ -89,6 +101,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ),
         'data-placeholder': placeholder,
       },
+      handleDOMEvents: {
+        // Prevent focus events from causing text selection
+        focus: (view, event) => {
+          // Don't prevent focus, just prevent selection
+          return false;
+        },
+        // Prevent blur events from interfering with selection
+        blur: (view, event) => {
+          return false;
+        }
+      }
     },
   });
 
@@ -97,6 +120,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return () => {
       if (editor) {
         editor.destroy();
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
       }
     };
   }, [editor]);
@@ -116,6 +142,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Apply grammar highlights when errors change
   React.useEffect(() => {
     if (!editor) return;
+
+    // Skip highlighting if user is actively typing to prevent cursor interference
+    if (isUserTypingRef.current) {
+      console.log('🔧 Skipping highlight operations - user is typing');
+      return;
+    }
 
     console.log('🔧 HIGHLIGHT EFFECT TRIGGERED:', {
       enableGrammarCheck,

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammarly Clone - Fixed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            min-height: 600px;
+        }
+
+        .editor-section {
+            padding: 40px;
+            border-right: 2px solid #e2e8f0;
+        }
+
+        .suggestions-section {
+            padding: 40px;
+            background: #f8fafc;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: "✏️";
+            font-size: 1.2em;
+        }
+
+        .suggestions-section .section-title::before {
+            content: "💡";
+        }
+
+        #text-editor {
+            width: 100%;
+            min-height: 400px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 1.7;
+            font-family: 'Georgia', serif;
+            background: #fefefe;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        #text-editor:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        #text-editor:empty::before {
+            content: "Start typing your text here for analysis...";
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        #analyze-btn {
+            width: 100%;
+            padding: 18px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #analyze-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        #analyze-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #analyze-btn.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #suggestions-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        #suggestions-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #suggestions-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        #suggestions-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .suggestion-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .suggestion-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .error-type-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .error-type-grammar {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .error-type-spelling {
+            background: #fff7ed;
+            color: #ea580c;
+            border: 1px solid #fed7aa;
+        }
+
+        .error-type-style {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .text-comparison {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .original-text {
+            font-family: 'Courier New', monospace;
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            border: 1px solid #fecaca;
+        }
+
+        .suggested-text {
+            font-family: 'Courier New', monospace;
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            border: 1px solid #bbf7d0;
+        }
+
+        .explanation {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .apply-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .apply-btn:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+
+        .apply-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .no-errors {
+            text-align: center;
+            padding: 40px 20px;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .no-errors::before {
+            content: "🎉";
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .stats-bar {
+            background: #f1f5f9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .applied-suggestion {
+            opacity: 0.6;
+            border-color: #d1d5db;
+        }
+
+        .applied-suggestion .apply-btn {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .editor-section {
+                border-right: none;
+                border-bottom: 2px solid #e2e8f0;
+            }
+
+            .container {
+                margin: 10px;
+            }
+
+            .editor-section,
+            .suggestions-section {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Text Analyzer</h1>
+            <p>Professional writing assistant powered by artificial intelligence</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="editor-section">
+                <h2 class="section-title">Text Editor</h2>
+                <div 
+                    id="text-editor" 
+                    contenteditable="true"
+                    spellcheck="false"
+                >This are a test sentence with grammar mistake. I hope this application will helps you improve you're writing skills.</div>
+                <button id="analyze-btn">Analyze Text</button>
+            </div>
+            
+            <div class="suggestions-section">
+                <h2 class="section-title">Suggestions</h2>
+                <div id="suggestions-container">
+                    <div class="status-message">
+                        Click "Analyze Text" to check your writing for errors and improvements.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+        IDEAL PROMPT FOR REAL AI ANALYSIS:
+        
+        You are an expert proofreader. Analyze the following text for spelling, grammar, and style errors. Do not change the user's casing or wording unless it is part of an error.
+        Respond ONLY with a valid JSON array. Each object in the array represents one error and must have the following keys: "error_type", "original_fragment", "suggested_correction", "explanation".
+
+        The "original_fragment" MUST be an exact substring from the provided text.
+        The "suggested_correction" is what the fragment should be changed to.
+
+        Here is the text:
+        ---
+        [USER'S TEXT HERE]
+        ---
+        */
+
+        const textEditor = document.getElementById('text-editor');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+
+        let appliedSuggestions = new Set();
+
+        // Event listeners
+        analyzeBtn.addEventListener('click', analyzeText);
+        suggestionsContainer.addEventListener('click', handleSuggestionClick);
+
+        async function analyzeText() {
+            // Get plain text content from the contenteditable div
+            const plainText = textEditor.innerText.trim();
+            
+            if (!plainText) {
+                showError('Please enter some text to analyze.');
+                return;
+            }
+
+            // Show loading state
+            setLoadingState(true);
+
+            try {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Simulate AI analysis with structured JSON response
+                const suggestions = simulateAIAnalysis(plainText);
+
+                // Render suggestions
+                renderSuggestions(suggestions);
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError(`Analysis failed: ${error.message}`);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function simulateAIAnalysis(text) {
+            // This simulates what a real AI would return in the correct JSON format
+            const suggestions = [];
+
+            // Check for "This are" -> "This is"
+            if (text.includes('This are')) {
+                suggestions.push({
+                    error_type: "Grammar",
+                    original_fragment: "This are",
+                    suggested_correction: "This is",
+                    explanation: "The subject 'This' is singular and requires the singular verb 'is'."
+                });
+            }
+
+            // Check for "grammar mistake" -> "a grammar mistake"
+            if (text.includes('grammar mistake')) {
+                suggestions.push({
+                    error_type: "Grammar",
+                    original_fragment: "grammar mistake",
+                    suggested_correction: "a grammar mistake",
+                    explanation: "Missing article 'a' before the noun phrase."
+                });
+            }
+
+            // Check for "will helps" -> "will help"
+            if (text.includes('will helps')) {
+                suggestions.push({
+                    error_type: "Grammar",
+                    original_fragment: "will helps",
+                    suggested_correction: "will help",
+                    explanation: "After modal verb 'will', use the base form 'help', not 'helps'."
+                });
+            }
+
+            // Check for "you're writing" -> "your writing" (context-dependent)
+            if (text.includes("you're writing skills")) {
+                suggestions.push({
+                    error_type: "Grammar",
+                    original_fragment: "you're writing skills",
+                    suggested_correction: "your writing skills",
+                    explanation: "Use possessive 'your' instead of contraction 'you're' before a noun."
+                });
+            }
+
+            // Check for other common errors
+            if (text.includes('recieve')) {
+                suggestions.push({
+                    error_type: "Spelling",
+                    original_fragment: "recieve",
+                    suggested_correction: "receive",
+                    explanation: "Common spelling error: 'i' before 'e' except after 'c'."
+                });
+            }
+
+            if (text.includes('there house')) {
+                suggestions.push({
+                    error_type: "Grammar",
+                    original_fragment: "there house",
+                    suggested_correction: "their house",
+                    explanation: "Use possessive 'their' instead of 'there' when referring to ownership."
+                });
+            }
+
+            return suggestions;
+        }
+
+        function renderSuggestions(suggestions) {
+            suggestionsContainer.innerHTML = '';
+
+            if (suggestions.length === 0) {
+                suggestionsContainer.innerHTML = `
+                    <div class="no-errors">
+                        No errors found! Your text looks great.
+                    </div>
+                `;
+                return;
+            }
+
+            // Add stats bar
+            const statsBar = document.createElement('div');
+            statsBar.className = 'stats-bar';
+            statsBar.innerHTML = `Found ${suggestions.length} suggestion${suggestions.length === 1 ? '' : 's'} for improvement`;
+            suggestionsContainer.appendChild(statsBar);
+
+            // Render each suggestion
+            suggestions.forEach((suggestion, index) => {
+                const card = createSuggestionCard(suggestion, index);
+                suggestionsContainer.appendChild(card);
+            });
+        }
+
+        function createSuggestionCard(suggestion, index) {
+            const card = document.createElement('div');
+            card.className = 'suggestion-card';
+            card.setAttribute('data-suggestion-id', index);
+
+            const errorTypeClass = `error-type-${suggestion.error_type.toLowerCase()}`;
+            
+            card.innerHTML = `
+                <div class="error-type-badge ${errorTypeClass}">
+                    ${suggestion.error_type}
+                </div>
+                <div class="text-comparison">
+                    <div class="original-text">
+                        "${suggestion.original_fragment}"
+                    </div>
+                    <div style="text-align: center; margin: 8px 0; color: #64748b;">↓</div>
+                    <div class="suggested-text">
+                        "${suggestion.suggested_correction}"
+                    </div>
+                </div>
+                <div class="explanation">
+                    ${suggestion.explanation}
+                </div>
+                <button 
+                    class="apply-btn" 
+                    data-original="${suggestion.original_fragment}" 
+                    data-suggestion="${suggestion.suggested_correction}"
+                    data-suggestion-id="${index}"
+                >
+                    Apply Fix
+                </button>
+            `;
+
+            return card;
+        }
+
+        function handleSuggestionClick(event) {
+            if (!event.target.classList.contains('apply-btn')) {
+                return;
+            }
+
+            const button = event.target;
+            const suggestionId = button.getAttribute('data-suggestion-id');
+            
+            // Check if already applied
+            if (appliedSuggestions.has(suggestionId)) {
+                return;
+            }
+
+            const originalFragment = button.getAttribute('data-original');
+            const suggestedCorrection = button.getAttribute('data-suggestion');
+
+            // Apply the correction
+            applySuggestion(originalFragment, suggestedCorrection, suggestionId);
+        }
+
+        function applySuggestion(originalFragment, suggestedCorrection, suggestionId) {
+            // Get current plain text from the editor
+            const currentText = textEditor.innerText;
+
+            // Check if the original fragment still exists in the text
+            if (!currentText.includes(originalFragment)) {
+                showError(`Text "${originalFragment}" not found in the current text. It may have already been changed.`);
+                return;
+            }
+
+            // Replace the first occurrence of the original fragment
+            const updatedText = currentText.replace(originalFragment, suggestedCorrection);
+
+            // Update the editor content
+            textEditor.innerText = updatedText;
+
+            // Mark suggestion as applied
+            appliedSuggestions.add(suggestionId);
+
+            // Update the suggestion card to show it's been applied
+            const card = document.querySelector(`[data-suggestion-id="${suggestionId}"]`);
+            if (card) {
+                card.classList.add('applied-suggestion');
+                const button = card.querySelector('.apply-btn');
+                button.textContent = 'Applied ✓';
+                button.disabled = true;
+            }
+
+            // Focus back on the editor
+            textEditor.focus();
+
+            // Place cursor at the end of the replaced text
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(textEditor);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function setLoadingState(isLoading) {
+            analyzeBtn.disabled = isLoading;
+            
+            if (isLoading) {
+                analyzeBtn.textContent = 'Analyzing...';
+                analyzeBtn.classList.add('loading');
+                suggestionsContainer.innerHTML = `
+                    <div class="status-message">
+                        Analyzing your text with AI...
+                    </div>
+                `;
+            } else {
+                analyzeBtn.textContent = 'Analyze Text';
+                analyzeBtn.classList.remove('loading');
+            }
+        }
+
+        function showError(message) {
+            suggestionsContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        // Reset applied suggestions when text is significantly changed
+        textEditor.addEventListener('input', debounce(() => {
+            appliedSuggestions.clear();
+        }, 1000));
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html> 

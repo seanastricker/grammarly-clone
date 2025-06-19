@@ -246,19 +246,27 @@ export async function applyGrammarHighlights(
           editorText: editor.getText().substring(from - 1, to - 1)
         });
         
-        // Apply the grammar highlight mark
-        editor
-          .chain()
-          .focus()
-          .setTextSelection({ from, to })
-          .setGrammarHighlight({
-            errorId: error.id,
-            errorType: error.type,
-            severity: error.severity,
-            message: error.message,
-            suggestions: error.suggestions,
-          })
-          .run();
+        // Apply the grammar highlight mark without changing selection
+        const { state, dispatch } = editor.view;
+        const tr = state.tr;
+        
+        // Store current selection to preserve it
+        const currentSelection = state.selection;
+        
+        // Apply the mark to the specific range without changing selection
+        tr.addMark(from, to, editor.schema.marks.grammarHighlight.create({
+          errorId: error.id,
+          errorType: error.type,
+          severity: error.severity,
+          message: error.message,
+          suggestions: error.suggestions,
+        }));
+        
+        // Explicitly preserve the current selection
+        tr.setSelection(currentSelection);
+        
+        // Dispatch the transaction
+        dispatch(tr);
           
         console.log(`🔧 Successfully applied highlight for error:`, error.id);
       } else {
@@ -344,18 +352,36 @@ export async function clearGrammarHighlights(editor: any): Promise<void> {
 
   return new Promise((resolve) => {
     try {
-      // Method 1: Use editor commands only (avoid transaction mixing)
-      console.log('🔧 Method 1: Using editor commands to clear all marks');
+      // Method 1: Use transaction directly to avoid selection changes
+      console.log('🔧 Method 1: Using transaction to clear marks without selection');
       
-      // Select all content and remove grammar highlights
-      const result = editor
-        .chain()
-        .focus()
-        .selectAll()
-        .unsetGrammarHighlight()
-        .run();
-        
-      console.log('🔧 Editor command result:', result);
+             // Clear grammar highlights without changing selection
+       const { state, dispatch } = editor.view;
+       const tr = state.tr;
+       
+       // Store current selection to preserve it
+       const currentSelection = state.selection;
+       
+       // Remove all grammar highlight marks from the document
+       state.doc.descendants((node: any, pos: number) => {
+         if (node.marks && node.marks.length > 0) {
+           node.marks.forEach((mark: any) => {
+             if (mark.type.name === 'grammarHighlight') {
+               tr.removeMark(pos, pos + node.nodeSize, mark.type);
+             }
+           });
+         }
+       });
+       
+       // Dispatch the transaction if changes were made
+       if (tr.docChanged) {
+         // Explicitly preserve the current selection
+         tr.setSelection(currentSelection);
+         dispatch(tr);
+         console.log('🔧 Grammar highlights cleared via transaction');
+       } else {
+         console.log('🔧 No grammar highlights found to clear');
+       }
       
       // Wait for the command to be processed
       setTimeout(() => {

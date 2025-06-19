@@ -15,7 +15,8 @@ import type {
   RegisterCredentials, 
   PasswordResetRequest,
   ProfileUpdateData,
-  OAuthProvider 
+  OAuthProvider,
+  UserProfile 
 } from '@/types/auth';
 import * as authService from '@/services/auth';
 
@@ -198,6 +199,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   /**
+   * Continue as guest user (no data persistence)
+   */
+  const continueAsGuest = async (): Promise<void> => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      // Create a temporary guest user profile
+      const guestUser: UserProfile = {
+        id: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        email: 'guest@wordwise.ai',
+        displayName: 'Guest User',
+        photoURL: null,
+        userType: 'professional',
+        experienceLevel: 'intermediate',
+        preferredTone: 'professional',
+        niche: '',
+        preferences: {
+          theme: 'system',
+          suggestionFrequency: 'medium',
+          grammarCheckEnabled: true,
+          styleSuggestionsEnabled: true,
+          realtimeSuggestionsEnabled: true,
+          notifications: {
+            email: false,
+            inApp: true,
+            weekly: false,
+          },
+          autoSaveInterval: 30,
+          defaultPrivacy: 'private',
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        emailVerified: false,
+        subscriptionStatus: 'free',
+        isGuest: true,
+      };
+
+      setAuthState({
+        user: guestUser,
+        firebaseUser: null, // No Firebase user for guests
+        isLoading: false,
+        error: null,
+        isEmailVerified: false
+      });
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Guest sign in failed',
+      }));
+      throw error;
+    }
+  };
+
+  /**
    * Sign out current user
    */
   const signOut = async (): Promise<void> => {
@@ -300,6 +356,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn,
     signUp,
     signInWithOAuth,
+    continueAsGuest,
     signOut,
     resetPassword,
     sendEmailVerification,

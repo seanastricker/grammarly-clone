@@ -66,6 +66,9 @@ export interface UserProfile {
   
   /** User subscription status */
   subscriptionStatus: 'free' | 'premium' | 'pro';
+  
+  /** Whether this is a guest user (no data persistence) */
+  isGuest?: boolean;
 }
 
 /**
@@ -214,6 +217,9 @@ export interface AuthContextType {
   
   /** Sign in with OAuth provider */
   signInWithOAuth: (provider: OAuthProvider) => Promise<void>;
+  
+  /** Continue as guest (no data persistence) */
+  continueAsGuest: () => Promise<void>;
   
   /** Sign out current user */
   signOut: () => Promise<void>;

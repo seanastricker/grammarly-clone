@@ -7,14 +7,23 @@
  */
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save, Download, Share, Settings, Loader2, FileCheck, Eye, Sparkles, BarChart } from 'lucide-react';
+import { ArrowLeft, Save, Download, Share, Settings, Loader2, Sparkles, BarChart, Bot } from 'lucide-react';
 import { useDocumentEditor } from '@/hooks/use-document-editor';
 import { useGrammarAnalysis } from '@/hooks/use-grammar-analysis';
 import { RichTextEditor } from '@/components/features/editor/rich-text-editor';
 import { StatsSidebar } from '@/components/features/editor/stats-sidebar';
-import { SuggestionsPanel } from '@/components/features/editor/suggestions-panel';
+
+import { UnifiedAIAssistant } from '@/components/features/editor/unified-ai-assistant';
 import type { AnalyzedError } from '@/services/ai/language-tool';
+import type { WritingSuggestion } from '@/services/ai/openai-service';
+import type { AIGrammarError } from '@/services/ai/grammar-ai-service';
 import { cn } from '@/lib/utils';
+
+// Type for grammar error suggestions
+interface AIGrammarSuggestion extends WritingSuggestion {
+  isGrammarError: true;
+  originalError: AIGrammarError;
+}
 
 /**
  * Editor page component
@@ -41,8 +50,8 @@ export const EditorPage: React.FC = () => {
 
   // UI state
   const [isGrammarEnabled, setIsGrammarEnabled] = useState(true);
-  const [showSuggestions, setShowSuggestions] = useState(true);
   const [showStats, setShowStats] = useState(true);
+  const [showAISuggestions, setShowAISuggestions] = useState(true);
 
   // Grammar analysis hook
   const {
@@ -74,75 +83,62 @@ export const EditorPage: React.FC = () => {
   const handleAcceptSuggestion = (errorId: string, suggestion: string) => {
     console.log('🔧 Accepting suggestion:', { errorId, suggestion, currentErrors: grammarErrors.length });
     
-    // Find the error to get its position information
+    // Find the error to get its information
     const error = grammarErrors.find(e => e.id === errorId);
     if (!error) {
       console.warn('🔧 Error not found for suggestion application:', errorId);
       return;
     }
 
-    console.log('🔧 Found error for suggestion:', {
-      errorId,
-      position: error.position,
-      suggestion,
-      contextText: error.context.text,
-      highlightRange: [error.context.highlightStart, error.context.highlightEnd]
-    });
-
     try {
-      // Get current plain text content from the editor for position mapping
+      // Get current plain text content from the editor
       const currentPlainText = content.replace(/<[^>]*>/g, '');
       
-      console.log('🔧 Editor-based replacement approach:', {
-        currentPlainTextLength: currentPlainText.length,
-        errorPosition: error.position,
-        textAtPosition: currentPlainText.substring(error.position.start, error.position.end)
-      });
-
-      // Extract the exact text that should be replaced from the error context
-      const expectedErrorText = error.context.text.substring(
+      // Extract the original fragment that needs to be replaced from the error context
+      const originalFragment = error.context.text.substring(
         error.context.highlightStart,
         error.context.highlightEnd
       );
 
-      console.log('🔧 Expected error text from context:', expectedErrorText);
+      console.log('🔧 Fixed replacement approach:', {
+        originalFragment,
+        suggestion,
+        currentTextLength: currentPlainText.length
+      });
+
+      // Check if the original fragment still exists in the current text
+      if (!currentPlainText.includes(originalFragment)) {
+        console.warn('🔧 Original fragment not found in current text:', originalFragment);
+        // Still dismiss the error to prevent UI confusion
+        dismissError(errorId);
+        return;
+      }
 
       // Apply capitalization preservation if needed
       let finalSuggestion = suggestion;
-      if (shouldPreserveCapitalization(currentPlainText, error.position.start, expectedErrorText)) {
+      const fragmentIndex = currentPlainText.indexOf(originalFragment);
+      if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, originalFragment)) {
         finalSuggestion = capitalizeFirstLetter(suggestion);
-        console.log('🔧 Preserving capitalization:', { original: expectedErrorText, suggestion, finalSuggestion });
+        console.log('🔧 Preserving capitalization:', { original: originalFragment, suggestion, finalSuggestion });
       }
 
-      // Use direct content replacement approach
-      // This works by replacing in the plain text and letting the editor handle the update
-      const beforeText = currentPlainText.substring(0, error.position.start);
-      const afterText = currentPlainText.substring(error.position.end);
-      const newPlainText = beforeText + finalSuggestion + afterText;
+      // Use simple string replacement - replace first occurrence only
+      const updatedText = currentPlainText.replace(originalFragment, finalSuggestion);
       
-      console.log('🔧 Direct content replacement:', {
-        beforeLength: beforeText.length,
-        originalLength: expectedErrorText.length,
-        suggestionLength: finalSuggestion.length,
-        afterLength: afterText.length,
-        totalOldLength: currentPlainText.length,
-        totalNewLength: newPlainText.length,
-        preview: {
-          before: beforeText.slice(-10),
-          original: expectedErrorText,
-          suggestion: finalSuggestion,
-          after: afterText.slice(0, 10)
-        }
+      console.log('🔧 String replacement result:', {
+        originalLength: currentPlainText.length,
+        newLength: updatedText.length,
+        fragmentFound: currentPlainText.includes(originalFragment),
+        replacementMade: updatedText !== currentPlainText
       });
 
-      // Update the content directly
-      // This will trigger the editor to update and clear existing highlights
-      updateContent(newPlainText);
+      // Update the content
+      updateContent(updatedText);
 
       // Dismiss the error after successful replacement
       dismissError(errorId);
 
-      console.log('🔧 Successfully applied suggestion and dismissed error');
+      console.log('🔧 Successfully applied suggestion using fixed approach');
       
     } catch (err) {
       console.error('🔧 Error applying suggestion:', err);
@@ -216,6 +212,93 @@ export const EditorPage: React.FC = () => {
       // Clear all errors
       clearErrors();
     }
+  };
+
+  // AI suggestion handlers  
+  const handleApplyAISuggestion = (suggestion: WritingSuggestion | AIGrammarSuggestion) => {
+    console.log('🤖 Applying AI suggestion:', suggestion);
+
+    // Handle AI grammar errors differently
+    if ('isGrammarError' in suggestion && suggestion.isGrammarError) {
+      const originalError = suggestion.originalError;
+      
+      // Extract the original fragment from the error context
+      const originalFragment = originalError.context.text.substring(
+        originalError.context.highlightStart,
+        originalError.context.highlightEnd
+      );
+
+      console.log('🤖 AI Grammar suggestion details:', {
+        originalFragment,
+        suggestedText: suggestion.suggestedText,
+        currentContentLength: content.length,
+        htmlPreview: content.substring(0, 200)
+      });
+
+      // CRITICAL FIX: Work with HTML content to preserve formatting
+      // Do NOT convert to plain text as this strips all formatting
+      if (content.includes(originalFragment)) {
+        // Direct replacement in HTML content while preserving all formatting
+        const correctedContent = content.replace(originalFragment, suggestion.suggestedText);
+        console.log('🤖 Applied correction to HTML content, preserving all formatting');
+        updateContent(correctedContent);
+      } else {
+        console.warn('🤖 Original fragment not found in HTML content:', originalFragment);
+        console.log('🤖 Content preview:', content.substring(0, 200) + '...');
+      }
+    } else if (suggestion.position) {
+      // Regular AI suggestion with position - use HTML replacement if we have original text
+      if (suggestion.originalText) {
+        console.log('🔧 Using HTML replacement for AI suggestion:', {
+          originalText: suggestion.originalText,
+          suggestedText: suggestion.suggestedText,
+          htmlContentLength: content.length,
+          originalTextFound: content.includes(suggestion.originalText)
+        });
+        
+        // CRITICAL FIX: Work with HTML content to preserve formatting
+        if (content.includes(suggestion.originalText)) {
+          const updatedContent = content.replace(suggestion.originalText, suggestion.suggestedText);
+          console.log('🔧 HTML replacement successful, preserving all formatting');
+          updateContent(updatedContent);
+        } else {
+          console.warn('🔧 Original text not found in HTML content:', suggestion.originalText);
+          console.log('🔧 HTML content preview:', content.substring(0, 200) + '...');
+        }
+      } else {
+        // Fallback: Only use plain text for position-based replacement when no original text
+        const plainText = content.replace(/<[^>]*>/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        const beforeText = plainText.substring(0, suggestion.position.start);
+        const afterText = plainText.substring(suggestion.position.end);
+        const newContent = beforeText + suggestion.suggestedText + afterText;
+        updateContent(newContent);
+      }
+    } else {
+      // Insert suggestion at current cursor position or append
+      updateContent(content + '\n\n' + suggestion.suggestedText);
+    }
+  };
+
+  const handleInsertAIContent = (generatedContent: string) => {
+    console.log('🤖 Inserting AI generated content:', generatedContent);
+    
+    // Insert the generated content at the end of the current content
+    const newContent = content + '\n\n' + generatedContent;
+    updateContent(newContent);
+  };
+
+  const handleReplaceContent = (newContent: string) => {
+    console.log('🤖 Replacing entire content with corrected version');
+    updateContent(newContent);
   };
 
   // Loading state
@@ -355,44 +438,18 @@ export const EditorPage: React.FC = () => {
             {/* Toggle Actions */}
             <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
               <button
-                onClick={() => {
-                  const newState = !isGrammarEnabled;
-                  console.log('🔧 Toggling grammar check:', { from: isGrammarEnabled, to: newState });
-                  
-                  setIsGrammarEnabled(newState);
-                  
-                  if (newState && content) {
-                    console.log('🔧 Re-enabling grammar check, triggering manual analysis');
-                    manualAnalyze(content);
-                  }
-                }}
+                onClick={() => setShowAISuggestions(!showAISuggestions)}
                 className={cn(
                   'p-2 rounded-lg transition-all duration-200 group',
-                  isGrammarEnabled
-                    ? 'bg-blue-600 text-white shadow-sm'
+                  showAISuggestions
+                    ? 'bg-purple-600 text-white shadow-sm'
                     : 'hover:bg-slate-200 text-slate-600'
                 )}
-                title={isGrammarEnabled ? 'Disable Grammar Check' : 'Enable Grammar Check'}
+                title={showAISuggestions ? 'Hide AI Assistant' : 'Show AI Assistant'}
               >
-                <FileCheck className={cn(
+                <Bot className={cn(
                   "w-4 h-4 transition-transform duration-200",
-                  isGrammarEnabled ? "scale-110" : "group-hover:scale-110"
-                )} />
-              </button>
-
-              <button
-                onClick={() => setShowSuggestions(!showSuggestions)}
-                className={cn(
-                  'p-2 rounded-lg transition-all duration-200 group',
-                  showSuggestions
-                    ? 'bg-slate-600 text-white shadow-sm'
-                    : 'hover:bg-slate-200 text-slate-600'
-                )}
-                title={showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}
-              >
-                <Eye className={cn(
-                  "w-4 h-4 transition-transform duration-200",
-                  showSuggestions ? "scale-110" : "group-hover:scale-110"
+                  showAISuggestions ? "scale-110" : "group-hover:scale-110"
                 )} />
               </button>
 
@@ -442,6 +499,19 @@ export const EditorPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex relative">
+        {/* Left Sidebar - Stats */}
+        {showStats && (
+          <div className="w-80 bg-white border-r border-slate-200 shadow-sm overflow-hidden animate-slide-in-left">
+            <StatsSidebar
+              document={document}
+              stats={stats}
+              isSaving={isSaving}
+              hasUnsavedChanges={hasUnsavedChanges}
+              lastSaved={lastSaved}
+            />
+          </div>
+        )}
+
         {/* Editor */}
         <main className="flex-1 overflow-hidden relative">
           <div className="h-full p-8 max-w-4xl mx-auto">
@@ -465,41 +535,18 @@ export const EditorPage: React.FC = () => {
           </div>
         </main>
 
-        {/* Floating Sidebars */}
-        <div className="absolute right-6 top-6 bottom-6 flex flex-col gap-4 z-10">
-          {/* Suggestions Panel */}
-          {showSuggestions && isGrammarEnabled && (
-            <div className="w-80 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-slide-in-right">
-              <SuggestionsPanel
-                errors={grammarErrors}
-                statistics={grammarStatistics}
-                isAnalyzing={isGrammarAnalyzing}
-                onAcceptSuggestion={(errorId, suggestion) => {
-                  console.log('🔧 PARENT: onAcceptSuggestion called with:', { errorId, suggestion });
-                  handleAcceptSuggestion(errorId, suggestion);
-                }}
-                onDismissError={(errorId) => {
-                  console.log('🔧 PARENT: onDismissError called with:', { errorId });
-                  handleDismissError(errorId);
-                }}
-                onAcceptAll={handleAcceptAll}
-              />
-            </div>
-          )}
-          
-          {/* Stats Sidebar */}
-          {showStats && (
-            <div className="w-80 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-slide-in-right" style={{ animationDelay: '0.1s' }}>
-              <StatsSidebar
-                document={document}
-                stats={stats}
-                isSaving={isSaving}
-                hasUnsavedChanges={hasUnsavedChanges}
-                lastSaved={lastSaved}
-              />
-            </div>
-          )}
-        </div>
+        {/* Right Sidebar - AI Assistant */}
+        {showAISuggestions && (
+          <div className="w-96 bg-white border-l border-slate-200 shadow-sm overflow-hidden animate-slide-in-right">
+            <UnifiedAIAssistant
+              content={content}
+              onApplySuggestion={handleApplyAISuggestion}
+              onInsertContent={handleInsertAIContent}
+              onReplaceContent={handleReplaceContent}
+              className="h-full"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

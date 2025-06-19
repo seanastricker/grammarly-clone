@@ -8,4 +8,7 @@
 
 export { RichTextEditor } from './rich-text-editor';
 export { EditorToolbar } from './toolbar';
-export { StatsSidebar } from './stats-sidebar'; 
+export { StatsSidebar } from './stats-sidebar';
+export { AISuggestionsPanel } from './ai-suggestions-panel';
+export { UnifiedAIAssistant } from './unified-ai-assistant';
+export { SuggestionsPanel } from './suggestions-panel'; 

@@ -1,13 +1,20 @@
 /**
- * @fileoverview Document service for Firebase operations
+ * @fileoverview Document service for Firebase operations and guest storage
  * @author WordWise AI Team
  * @version 1.0.0
  * 
- * Service layer for document management with Firebase Firestore.
+ * Service layer for document management with Firebase Firestore and in-memory guest storage.
  * Handles CRUD operations, querying, and document statistics.
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+
+/**
+ * In-memory storage for guest users
+ * Data is lost when the session ends
+ */
+const guestDocuments = new Map<string, Document>();
+let guestDocumentCounter = 1;
 
 import {
   collection,
@@ -62,6 +69,20 @@ const defaultStats: DocumentStats = {
   readingTime: 0,
   lastEditedAt: new Date()
 };
+
+/**
+ * Check if a user ID indicates a guest user
+ */
+function isGuestUser(userId: string): boolean {
+  return userId.startsWith('guest_');
+}
+
+/**
+ * Generate a unique guest document ID
+ */
+function generateGuestDocumentId(): string {
+  return `guest_doc_${guestDocumentCounter++}_${Date.now()}`;
+}
 
 /**
  * Convert Firestore document to Document type
@@ -167,6 +188,20 @@ export const createDocument = async (
     isAutoSaveEnabled: true
   };
 
+  // Handle guest users with in-memory storage
+  if (isGuestUser(userId)) {
+    const documentId = generateGuestDocumentId();
+    const newDocument: Document = {
+      id: documentId,
+      ...documentData
+    };
+    
+    guestDocuments.set(documentId, newDocument);
+    console.log('🔄 Guest document created in memory:', documentId);
+    return newDocument;
+  }
+
+  // Regular Firebase storage for authenticated users
   try {
     const docRef = await addDoc(collection(db, 'documents'), documentData);
     
@@ -189,6 +224,19 @@ export const getDocument = async (
   documentId: string,
   userId: string
 ): Promise<Document | null> => {
+  // Handle guest users with in-memory storage
+  if (isGuestUser(userId)) {
+    const document = guestDocuments.get(documentId);
+    if (document && document.userId === userId) {
+      // Update last accessed time
+      document.lastAccessedAt = new Date();
+      console.log('🔄 Guest document retrieved from memory:', documentId);
+      return document;
+    }
+    return null;
+  }
+
+  // Regular Firebase storage for authenticated users
   try {
     const docRef = doc(db, 'documents', documentId);
     const docSnap = await getDoc(docRef);
@@ -252,6 +300,37 @@ export async function updateDocument(
   userId: string,
   updateData: UpdateDocumentData
 ): Promise<Document> {
+  // Handle guest users with in-memory storage
+  if (isGuestUser(userId)) {
+    const document = guestDocuments.get(documentId);
+    if (!document || document.userId !== userId) {
+      throw new Error('Document not found');
+    }
+
+    // Update the document in memory
+    const updatedDocument: Document = {
+      ...document,
+      ...(updateData.title && { title: updateData.title }),
+      ...(updateData.content && { content: updateData.content }),
+      ...(updateData.type && { type: updateData.type }),
+      ...(updateData.privacy && { privacy: updateData.privacy }),
+      ...(updateData.status && { status: updateData.status }),
+      ...(updateData.description !== undefined && { description: updateData.description }),
+      ...(updateData.tags && { tags: updateData.tags }),
+      updatedAt: new Date(),
+      lastAccessedAt: new Date(),
+      version: document.version + 1,
+      stats: updateData.content 
+        ? { ...document.stats, ...calculateTextStats(updateData.content) }
+        : updateData.stats ? { ...document.stats, ...updateData.stats } : document.stats
+    };
+
+    guestDocuments.set(documentId, updatedDocument);
+    console.log('🔄 Guest document updated in memory:', documentId);
+    return updatedDocument;
+  }
+
+  // Regular Firebase storage for authenticated users
   try {
     const docRef = doc(db, COLLECTIONS.DOCUMENTS, documentId);
     
@@ -322,6 +401,20 @@ export async function getUserDocuments(
   userId: string,
   options: DocumentQueryOptions = {}
 ): Promise<DocumentListResponse> {
+  // Handle guest users with in-memory storage
+  if (isGuestUser(userId)) {
+    const userDocuments = Array.from(guestDocuments.values())
+      .filter(doc => doc.userId === userId);
+    
+    console.log('🔄 Guest documents retrieved from memory:', userDocuments.length);
+    return {
+      documents: userDocuments,
+      total: userDocuments.length,
+      hasMore: false
+    };
+  }
+
+  // Regular Firebase storage for authenticated users
   try {
     const {
       filters = {},
