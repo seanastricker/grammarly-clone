@@ -85,12 +85,12 @@ These user stories should be implemented **in sequential order**, with each stor
 **So that** I can create more creative monsters that players have not yet encountered before.
 
 ### Acceptance Criteria
-- [ ] AI can suggest creative re-skins for existing D&D monsters
-- [ ] Re-skin suggestions maintain the original monster's mechanical balance
-- [ ] Suggestions include visual descriptions and thematic elements
-- [ ] AI can adapt monsters to fit specific campaign themes or settings
-- [ ] Multiple re-skin options provided for each monster
-- [ ] Suggestions include behavioral and lore modifications
+- [X] AI can suggest creative re-skins for existing D&D monsters
+- [X] Re-skin suggestions maintain the original monster's mechanical balance
+- [X] Suggestions include visual descriptions and thematic elements
+- [X] AI can adapt monsters to fit specific campaign themes or settings
+- [X] Multiple re-skin options provided for each monster
+- [X] Suggestions include behavioral and lore modifications
 
 ### Technical Requirements
 - D&D Monster Manual database or reference system

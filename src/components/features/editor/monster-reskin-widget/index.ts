@@ -1,0 +1,1 @@
+export { MonsterReSkinWidget } from '../monster-reskin-widget'; 
