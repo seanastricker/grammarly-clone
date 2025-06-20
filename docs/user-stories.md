@@ -22,12 +22,12 @@ These user stories should be implemented **in sequential order**, with each stor
 **So that** I can publish my campaign for other Dungeon Masters to use.
 
 ### Acceptance Criteria
-- [ ] AI can identify and suggest corrections for grammar errors in campaign text
-- [ ] AI can identify and suggest corrections for spelling errors in campaign text
-- [ ] AI provides style suggestions to improve readability and engagement
-- [ ] AI understands D&D terminology and doesn't flag it as errors
-- [ ] Corrections can be accepted or rejected individually
-- [ ] Final polished campaign can be exported in multiple formats (PDF, text, etc.)
+- [X] AI can identify and suggest corrections for grammar errors in campaign text
+- [X] AI can identify and suggest corrections for spelling errors in campaign text
+- [X] AI provides style suggestions to improve readability and engagement
+- [X] AI understands D&D terminology and doesn't flag it as errors
+- [X] Corrections can be accepted or rejected individually
+- [X] Final polished campaign can be exported in multiple formats (PDF, text, etc.)
 
 ### Technical Requirements
 - Integration with grammar/spell checking APIs

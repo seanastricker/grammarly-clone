@@ -136,4 +136,24 @@ export function debounce<T extends (...args: any[]) => any>(
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
   };
+}
+
+/**
+ * Extracts plain text from HTML content consistently
+ * Used by both grammar analysis and suggestion application
+ * 
+ * @param htmlContent - HTML content to extract text from
+ * @returns Plain text with normalized whitespace
+ */
+export function extractPlainTextFromHTML(htmlContent: string): string {
+  return htmlContent
+    .replace(/<[^>]*>/g, ' ')           // Replace HTML tags with spaces
+    .replace(/&nbsp;/g, ' ')           // Replace non-breaking spaces
+    .replace(/&amp;/g, '&')           // Decode HTML entities
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')              // Normalize whitespace
+    .trim();
 } 

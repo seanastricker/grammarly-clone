@@ -342,10 +342,10 @@ function calculateStatistics(errors: AnalyzedError[]) {
 
 /**
  * Extract plain text from HTML content (for TipTap)
+ * Uses consistent method with suggestion application
  */
 export function extractTextFromHTML(htmlContent: string): string {
-  // Create a temporary div to parse HTML
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = htmlContent;
-  return tempDiv.textContent || tempDiv.innerText || '';
+  // Import the consistent function from utils
+  const { extractPlainTextFromHTML } = require('@/lib/utils');
+  return extractPlainTextFromHTML(htmlContent);
 } 

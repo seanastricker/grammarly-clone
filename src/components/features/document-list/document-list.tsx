@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { DocumentCard } from './document-card';
+import { ExportModal } from '../editor/export-modal';
 import { cn } from '@/lib/utils';
 import type { 
   Document, 
@@ -53,6 +54,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     field: 'updatedAt',
     direction: 'desc'
   });
+
+  // Export modal state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [documentToExport, setDocumentToExport] = useState<Document | null>(null);
 
   /**
    * Load documents from Firebase
@@ -184,19 +189,21 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     }
   };
 
-  /**
-   * Handle document sharing (placeholder)
-   */
-  const handleShare = (_document: Document) => {
-    // TODO: Implement sharing functionality
-    alert('Sharing functionality coming soon!');
-  };
+
 
   /**
    * Handle document editing (navigate to editor)
    */
   const handleEdit = (document: Document) => {
     window.location.href = `/editor/${document.id}`;
+  };
+
+  /**
+   * Handle document export
+   */
+  const handleExport = (document: Document) => {
+    setDocumentToExport(document);
+    setShowExportModal(true);
   };
 
   if (isLoading) {
@@ -319,7 +326,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               onEdit={handleEdit}
               onDelete={handleDelete}
               onDuplicate={handleDuplicate}
-              onShare={handleShare}
+              onExport={handleExport}
             />
           ))}
         </div>
@@ -347,6 +354,18 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             )}
           </div>
         </div>
+      )}
+
+      {/* Export Modal */}
+      {documentToExport && (
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => {
+            setShowExportModal(false);
+            setDocumentToExport(null);
+          }}
+          document={documentToExport}
+        />
       )}
     </div>
   );

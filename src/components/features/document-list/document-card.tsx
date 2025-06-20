@@ -15,10 +15,10 @@ import {
   Edit, 
   Trash2, 
   Copy,
-  Share,
   Calendar,
   Eye,
-  Clock
+  Clock,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Document, DocumentType } from '@/types/document';
@@ -31,7 +31,7 @@ interface DocumentCardProps {
   onEdit?: (document: Document) => void;
   onDelete?: (documentId: string) => void;
   onDuplicate?: (document: Document) => void;
-  onShare?: (document: Document) => void;
+  onExport?: (document: Document) => void;
   className?: string;
 }
 
@@ -92,7 +92,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   onEdit,
   onDelete,
   onDuplicate,
-  onShare,
+  onExport,
   className
 }) => {
   const [showActions, setShowActions] = useState(false);
@@ -190,13 +190,14 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                     <span>Duplicate</span>
                   </button>
                 )}
-                {onShare && (
+
+                {onExport && (
                   <button
                     className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-slate-50 text-left text-slate-800"
-                    onClick={(e) => handleActionClick(e, () => onShare(document))}
+                    onClick={(e) => handleActionClick(e, () => onExport(document))}
                   >
-                    <Share className="w-4 h-4" />
-                    <span>Share</span>
+                    <Download className="w-4 h-4" />
+                    <span>Export</span>
                   </button>
                 )}
                 {onDelete && (

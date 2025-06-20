@@ -7,17 +7,17 @@
  */
 
 import React, { useState } from 'react';
-import { ArrowLeft, Save, Download, Share, Settings, Loader2, Sparkles, BarChart, Bot } from 'lucide-react';
+import { ArrowLeft, Save, Download, Settings, Loader2, Sparkles, BarChart, Bot } from 'lucide-react';
 import { useDocumentEditor } from '@/hooks/use-document-editor';
 import { useGrammarAnalysis } from '@/hooks/use-grammar-analysis';
 import { RichTextEditor } from '@/components/features/editor/rich-text-editor';
 import { StatsSidebar } from '@/components/features/editor/stats-sidebar';
-
+import { ExportModal } from '@/components/features/editor/export-modal';
 import { UnifiedAIAssistant } from '@/components/features/editor/unified-ai-assistant';
 import type { AnalyzedError } from '@/services/ai/language-tool';
 import type { WritingSuggestion } from '@/services/ai/openai-service';
 import type { AIGrammarError } from '@/services/ai/grammar-ai-service';
-import { cn } from '@/lib/utils';
+import { cn, extractPlainTextFromHTML } from '@/lib/utils';
 
 // Type for grammar error suggestions
 interface AIGrammarSuggestion extends WritingSuggestion {
@@ -52,6 +52,7 @@ export const EditorPage: React.FC = () => {
   const [isGrammarEnabled, setIsGrammarEnabled] = useState(true);
   const [showStats, setShowStats] = useState(true);
   const [showAISuggestions, setShowAISuggestions] = useState(true);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Grammar analysis hook
   const {
@@ -81,18 +82,19 @@ export const EditorPage: React.FC = () => {
   };
 
   const handleAcceptSuggestion = (errorId: string, suggestion: string) => {
-    console.log('🔧 Accepting suggestion:', { errorId, suggestion, currentErrors: grammarErrors.length });
+    console.log('🔧 INDIVIDUAL APPLY - Starting application:', { errorId, suggestion, currentErrors: grammarErrors.length });
     
     // Find the error to get its information
     const error = grammarErrors.find(e => e.id === errorId);
     if (!error) {
-      console.warn('🔧 Error not found for suggestion application:', errorId);
+      console.warn('🔧 INDIVIDUAL APPLY - Error not found:', errorId);
       return;
     }
 
     try {
-      // Get current plain text content from the editor
-      const currentPlainText = content.replace(/<[^>]*>/g, '');
+      // CONSISTENT PLAIN TEXT EXTRACTION
+      // Use the same method as grammar analysis to ensure consistency
+      const currentPlainText = extractPlainTextFromHTML(content);
       
       // Extract the original fragment that needs to be replaced from the error context
       const originalFragment = error.context.text.substring(
@@ -100,15 +102,47 @@ export const EditorPage: React.FC = () => {
         error.context.highlightEnd
       );
 
-      console.log('🔧 Fixed replacement approach:', {
+      console.log('🔧 INDIVIDUAL APPLY - Processing:', {
+        errorId,
         originalFragment,
         suggestion,
-        currentTextLength: currentPlainText.length
+        currentTextLength: currentPlainText.length,
+        fragmentFound: currentPlainText.includes(originalFragment),
+        currentTextPreview: currentPlainText.substring(0, 100) + '...'
       });
 
       // Check if the original fragment still exists in the current text
       if (!currentPlainText.includes(originalFragment)) {
-        console.warn('🔧 Original fragment not found in current text:', originalFragment);
+        console.warn('🔧 INDIVIDUAL APPLY - Original fragment not found in current text:', {
+          originalFragment,
+          currentTextPreview: currentPlainText.substring(0, 200) + '...',
+          searchAttempts: [
+            { method: 'exact', found: currentPlainText.includes(originalFragment) },
+            { method: 'trimmed', found: currentPlainText.includes(originalFragment.trim()) },
+            { method: 'normalized', found: currentPlainText.replace(/\s+/g, ' ').includes(originalFragment.replace(/\s+/g, ' ')) }
+          ]
+        });
+        
+        // Try alternative search methods
+        let searchFragment = originalFragment.trim();
+        if (currentPlainText.includes(searchFragment)) {
+          console.log('🔧 INDIVIDUAL APPLY - Found fragment using trimmed search');
+          // Update the fragment to use for replacement
+          const fragmentIndex = currentPlainText.indexOf(searchFragment);
+          
+          // Apply capitalization preservation if needed
+          let finalSuggestion = suggestion;
+          if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, searchFragment)) {
+            finalSuggestion = capitalizeFirstLetter(suggestion);
+          }
+
+          const updatedText = currentPlainText.replace(searchFragment, finalSuggestion);
+          updateContent(updatedText);
+          dismissError(errorId);
+          console.log('🔧 INDIVIDUAL APPLY - Successfully applied suggestion using trimmed search');
+          return;
+        }
+        
         // Still dismiss the error to prevent UI confusion
         dismissError(errorId);
         return;
@@ -119,29 +153,42 @@ export const EditorPage: React.FC = () => {
       const fragmentIndex = currentPlainText.indexOf(originalFragment);
       if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, originalFragment)) {
         finalSuggestion = capitalizeFirstLetter(suggestion);
-        console.log('🔧 Preserving capitalization:', { original: originalFragment, suggestion, finalSuggestion });
+        console.log('🔧 INDIVIDUAL APPLY - Preserving capitalization:', { 
+          original: originalFragment, 
+          suggestion, 
+          finalSuggestion 
+        });
       }
 
       // Use simple string replacement - replace first occurrence only
       const updatedText = currentPlainText.replace(originalFragment, finalSuggestion);
       
-      console.log('🔧 String replacement result:', {
+      console.log('🔧 INDIVIDUAL APPLY - Replacement result:', {
         originalLength: currentPlainText.length,
         newLength: updatedText.length,
-        fragmentFound: currentPlainText.includes(originalFragment),
-        replacementMade: updatedText !== currentPlainText
+        replacementMade: updatedText !== currentPlainText,
+        changePreview: {
+          before: originalFragment,
+          after: finalSuggestion
+        }
       });
 
-      // Update the content
+      if (updatedText === currentPlainText) {
+        console.warn('🔧 INDIVIDUAL APPLY - No changes were made to the text');
+        dismissError(errorId);
+        return;
+      }
+
+      // Update the content with plain text
       updateContent(updatedText);
 
       // Dismiss the error after successful replacement
       dismissError(errorId);
 
-      console.log('🔧 Successfully applied suggestion using fixed approach');
+      console.log('🔧 INDIVIDUAL APPLY - Successfully applied suggestion');
       
     } catch (err) {
-      console.error('🔧 Error applying suggestion:', err);
+      console.error('🔧 INDIVIDUAL APPLY - Error applying suggestion:', err);
       // Still dismiss the error even if replacement fails to prevent UI confusion
       dismissError(errorId);
     }
@@ -204,12 +251,156 @@ export const EditorPage: React.FC = () => {
   };
 
   const handleAcceptAll = (type?: 'grammar' | 'spelling' | 'style') => {
-    if (type) {
-      // Dismiss all errors of a specific type
-      const errorsToRemove = grammarErrors.filter(error => error.type === type);
-      errorsToRemove.forEach(error => dismissError(error.id));
-    } else {
-      // Clear all errors
+    console.log('🔧 ACCEPT ALL - Starting bulk application:', { type, totalErrors: grammarErrors.length });
+    
+    // Get errors to apply
+    const errorsToApply = type 
+      ? grammarErrors.filter(error => error.type === type)
+      : grammarErrors;
+
+    console.log('🔧 ACCEPT ALL - Errors to apply:', errorsToApply.length);
+
+    if (errorsToApply.length === 0) {
+      console.log('🔧 ACCEPT ALL - No errors to apply');
+      return;
+    }
+
+    try {
+      // CONSISTENT PLAIN TEXT EXTRACTION
+      // Use the same method as grammar analysis to ensure consistency
+      let currentPlainText = extractPlainTextFromHTML(content);
+
+      console.log('🔧 ACCEPT ALL - Starting with plain text:', {
+        originalLength: content.length,
+        plainTextLength: currentPlainText.length,
+        plainTextPreview: currentPlainText.substring(0, 100) + '...'
+      });
+
+      // Apply all suggestions in sequence
+      // We need to work from end to beginning to avoid position shifts
+      const sortedErrors = [...errorsToApply].sort((a, b) => {
+        // Sort by position (descending) to apply from end to beginning
+        return (b.position?.start || 0) - (a.position?.start || 0);
+      });
+
+      console.log('🔧 ACCEPT ALL - Applying suggestions in order:', sortedErrors.map(e => ({
+        id: e.id,
+        type: e.type,
+        position: e.position,
+        suggestions: e.suggestions.length
+      })));
+
+      let appliedCount = 0;
+      let skippedCount = 0;
+
+      // Apply each suggestion to the running content
+      for (const error of sortedErrors) {
+        if (error.suggestions.length === 0) {
+          console.log('🔧 ACCEPT ALL - Skipping error with no suggestions:', error.id);
+          skippedCount++;
+          continue;
+        }
+
+        const suggestion = error.suggestions[0]; // Use first suggestion
+        
+        // Extract the original fragment that needs to be replaced
+        const originalFragment = error.context.text.substring(
+          error.context.highlightStart,
+          error.context.highlightEnd
+        );
+
+        console.log('🔧 ACCEPT ALL - Processing error:', {
+          id: error.id,
+          originalFragment,
+          suggestion,
+          currentTextLength: currentPlainText.length,
+          fragmentFound: currentPlainText.includes(originalFragment)
+        });
+
+        // Check if the original fragment still exists in the current text
+        if (currentPlainText.includes(originalFragment)) {
+          // Apply capitalization preservation if needed
+          let finalSuggestion = suggestion;
+          const fragmentIndex = currentPlainText.indexOf(originalFragment);
+          if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, originalFragment)) {
+            finalSuggestion = capitalizeFirstLetter(suggestion);
+          }
+
+          // Replace in the plain text
+          const beforeReplacement = currentPlainText;
+          currentPlainText = currentPlainText.replace(originalFragment, finalSuggestion);
+          
+          if (currentPlainText !== beforeReplacement) {
+            appliedCount++;
+            console.log('🔧 ACCEPT ALL - Applied suggestion:', {
+              id: error.id,
+              originalFragment,
+              finalSuggestion,
+              appliedCount,
+              lengthChange: currentPlainText.length - beforeReplacement.length
+            });
+          } else {
+            console.warn('🔧 ACCEPT ALL - Replacement made no changes:', error.id);
+            skippedCount++;
+          }
+        } else {
+          // Try alternative search methods
+          const trimmedFragment = originalFragment.trim();
+          if (currentPlainText.includes(trimmedFragment)) {
+            console.log('🔧 ACCEPT ALL - Found fragment using trimmed search:', error.id);
+            
+            let finalSuggestion = suggestion;
+            const fragmentIndex = currentPlainText.indexOf(trimmedFragment);
+            if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, trimmedFragment)) {
+              finalSuggestion = capitalizeFirstLetter(suggestion);
+            }
+
+            const beforeReplacement = currentPlainText;
+            currentPlainText = currentPlainText.replace(trimmedFragment, finalSuggestion);
+            
+            if (currentPlainText !== beforeReplacement) {
+              appliedCount++;
+              console.log('🔧 ACCEPT ALL - Applied suggestion using trimmed search:', error.id);
+            } else {
+              skippedCount++;
+            }
+          } else {
+            console.warn('🔧 ACCEPT ALL - Fragment not found, skipping:', {
+              id: error.id,
+              originalFragment,
+              trimmedFragment,
+              currentTextPreview: currentPlainText.substring(0, 100) + '...'
+            });
+            skippedCount++;
+          }
+        }
+      }
+
+      console.log('🔧 ACCEPT ALL - Bulk application complete:', {
+        totalErrors: errorsToApply.length,
+        appliedCount,
+        skippedCount,
+        originalLength: content.length,
+        newLength: currentPlainText.length,
+        textChanged: currentPlainText !== extractPlainTextFromHTML(content)
+      });
+
+      if (appliedCount > 0) {
+        // Update the content with all changes
+        updateContent(currentPlainText);
+        
+        // Clear all errors after successful application
+        clearErrors();
+        
+        console.log('🔧 ACCEPT ALL - Successfully applied', appliedCount, 'suggestions');
+      } else {
+        console.log('🔧 ACCEPT ALL - No suggestions were applied, clearing errors anyway to prevent UI confusion');
+        // Clear errors even if no suggestions were applied to prevent UI confusion
+        clearErrors();
+      }
+    } catch (err) {
+      console.error('🔧 ACCEPT ALL - Error during bulk application:', err);
+      // Clear errors to prevent UI confusion even if there was an error
       clearErrors();
     }
   };
@@ -473,17 +664,11 @@ export const EditorPage: React.FC = () => {
             {/* Secondary Actions */}
             <div className="flex items-center gap-1">
               <button
+                onClick={() => setShowExportModal(true)}
                 className="p-2 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-900"
-                title="Download Document"
+                title="Export Campaign"
               >
                 <Download className="w-4 h-4" />
-              </button>
-              
-              <button
-                className="p-2 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-900"
-                title="Share Document"
-              >
-                <Share className="w-4 h-4" />
               </button>
               
               <button
@@ -548,6 +733,15 @@ export const EditorPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Export Modal */}
+      {document && (
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          document={document}
+        />
+      )}
     </div>
   );
 };

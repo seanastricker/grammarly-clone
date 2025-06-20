@@ -9,6 +9,7 @@ import { useAIGrammarAnalysis } from '@/hooks/use-ai-grammar-analysis';
 import { generateWritingSuggestions, generateContent, analyzeWriting, type WritingSuggestion, type ContentGenerationRequest, type WritingAnalysis } from '@/services/ai/openai-service';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
+import { extractPlainTextFromHTML } from '@/lib/utils';
 
 interface UnifiedAIAssistantProps {
   content: string;
@@ -72,15 +73,7 @@ export function UnifiedAIAssistant({
   // Convert grammar errors to suggestions format
   const grammarSuggestions: AIGrammarSuggestion[] = useMemo(() => {
     // Extract plain text from HTML content for accurate position mapping
-    const plainText = content.replace(/<[^>]*>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\s+/g, ' ')
-      .trim();
+    const plainText = extractPlainTextFromHTML(content);
 
     console.log('🤖 Converting grammar errors to suggestions:', {
       errorCount: grammarErrors.length,
@@ -196,83 +189,110 @@ export function UnifiedAIAssistant({
   const handleAcceptAllErrors = () => {
     console.log('🤖 Applying all grammar suggestions:', grammarSuggestions.length);
     
-    // Sort suggestions by position (right to left) to avoid position shifts
-    const sortedSuggestions = [...grammarSuggestions]
-      .filter(s => s.position) // Only include suggestions with valid positions
-      .sort((a, b) => (b.position?.start || 0) - (a.position?.start || 0));
-    
-    console.log('🤖 Sorted suggestions by position:', sortedSuggestions.map(s => ({
-      id: s.id,
-      position: s.position,
-      originalText: s.originalText,
-      suggestedText: s.suggestedText
-    })));
+    if (grammarSuggestions.length === 0) {
+      console.log('🤖 No suggestions to apply');
+      return;
+    }
 
-    // Work with HTML content to preserve formatting
-    let correctedContent = content;
-    let appliedCount = 0;
-    let failedCount = 0;
+    try {
+      // CONSISTENT PLAIN TEXT EXTRACTION
+      // Use the same method as grammar analysis to ensure consistency
+      let currentPlainText = extractPlainTextFromHTML(content);
 
-    console.log('🤖 Starting with HTML content:', correctedContent);
-    console.log('🤖 Starting content length:', correctedContent.length);
-
-    // Apply suggestions one by one to the HTML content
-    sortedSuggestions.forEach((suggestion, index) => {
-      console.log(`🤖 Processing suggestion ${index + 1}/${sortedSuggestions.length}:`, {
-        originalText: suggestion.originalText,
-        suggestedText: suggestion.suggestedText,
-        position: suggestion.position
+      console.log('🤖 Starting with plain text:', {
+        originalLength: content.length,
+        plainTextLength: currentPlainText.length,
+        plainTextPreview: currentPlainText.substring(0, 100) + '...'
       });
 
-      // Find and replace the original text in HTML content
-      // Use word boundaries to ensure we replace whole words
-      const regex = new RegExp(`\\b${suggestion.originalText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
-      const beforeLength = correctedContent.length;
+      // Sort suggestions by position (right to left) to avoid position shifts
+      const sortedSuggestions = [...grammarSuggestions]
+        .filter(s => s.position && s.originalText && s.suggestedText) // Only include valid suggestions
+        .sort((a, b) => (b.position?.start || 0) - (a.position?.start || 0));
       
-      if (regex.test(correctedContent)) {
-        // Reset regex lastIndex and perform replacement
-        regex.lastIndex = 0;
-        correctedContent = correctedContent.replace(regex, suggestion.suggestedText);
-        const afterLength = correctedContent.length;
-        
-        console.log(`🤖 ✅ Applied correction ${index + 1}: "${suggestion.originalText}" → "${suggestion.suggestedText}"`);
-        console.log(`🤖 Content length changed from ${beforeLength} to ${afterLength}`);
-        appliedCount++;
-      } else {
-        console.log(`🤖 ❌ Failed to find text for correction ${index + 1}: "${suggestion.originalText}"`);
-        failedCount++;
+      console.log('🤖 Sorted suggestions by position:', sortedSuggestions.map(s => ({
+        id: s.id,
+        position: s.position,
+        originalText: s.originalText,
+        suggestedText: s.suggestedText
+      })));
+
+      let appliedCount = 0;
+      let failedCount = 0;
+
+      // Apply each suggestion to the running plain text content
+      for (const suggestion of sortedSuggestions) {
+        console.log(`🤖 Processing suggestion ${appliedCount + failedCount + 1}/${sortedSuggestions.length}:`, {
+          id: suggestion.id,
+          originalText: suggestion.originalText,
+          suggestedText: suggestion.suggestedText,
+          position: suggestion.position
+        });
+
+        // Check if the original text still exists in the current plain text
+        if (currentPlainText.includes(suggestion.originalText)) {
+          // Apply the replacement
+          const beforeReplacement = currentPlainText;
+          currentPlainText = currentPlainText.replace(suggestion.originalText, suggestion.suggestedText);
+          
+          if (currentPlainText !== beforeReplacement) {
+            appliedCount++;
+            console.log(`🤖 ✅ Applied correction: "${suggestion.originalText}" → "${suggestion.suggestedText}"`);
+          } else {
+            console.warn(`🤖 ⚠️ Replacement made no changes for suggestion: ${suggestion.id}`);
+            failedCount++;
+          }
+        } else {
+          // Try alternative search methods
+          const trimmedOriginal = suggestion.originalText.trim();
+          if (currentPlainText.includes(trimmedOriginal)) {
+            console.log(`🤖 Found text using trimmed search: ${suggestion.id}`);
+            const beforeReplacement = currentPlainText;
+            currentPlainText = currentPlainText.replace(trimmedOriginal, suggestion.suggestedText);
+            
+            if (currentPlainText !== beforeReplacement) {
+              appliedCount++;
+              console.log(`🤖 ✅ Applied correction using trimmed search: "${trimmedOriginal}" → "${suggestion.suggestedText}"`);
+            } else {
+              failedCount++;
+            }
+          } else {
+            console.log(`🤖 ❌ Failed to find text for correction: "${suggestion.originalText}"`);
+            console.log(`🤖 Current text preview:`, currentPlainText.substring(0, 200) + '...');
+            failedCount++;
+          }
+        }
       }
-    });
 
-    console.log(`🤖 Summary: ${appliedCount} applied, ${failedCount} failed out of ${sortedSuggestions.length} total`);
-    console.log('🤖 Final corrected content:', correctedContent);
+      console.log(`🤖 Summary: ${appliedCount} applied, ${failedCount} failed out of ${sortedSuggestions.length} total`);
 
-    // Update content if changes were made
-    if (appliedCount > 0) {
-      console.log('🤖 Content has changed, applying update');
-      
-      // Create a special suggestion for full content replacement
-      const fullContentSuggestion: WritingSuggestion = {
-        id: 'accept-all-content-replacement',
-        type: 'grammar',
-        title: 'Accept All Corrections',
-        description: `Applied ${appliedCount} corrections`,
-        originalText: content, // Original HTML content
-        suggestedText: correctedContent, // Corrected HTML content
-        confidence: 1.0,
-        reasoning: 'Bulk correction with formatting preservation',
-        category: 'grammar'
-      };
-      
-      // Use the special content replacement path
-      onReplaceContent?.(correctedContent);
-      
-      // Dismiss all applied errors
-      sortedSuggestions.forEach(suggestion => {
+      // Update content if changes were made
+      if (appliedCount > 0) {
+        console.log('🤖 Content has changed, applying update');
+        console.log('🤖 Final corrected content length:', currentPlainText.length);
+        
+        // Use the content replacement callback
+        onReplaceContent?.(currentPlainText);
+        
+        // Dismiss all processed errors (both successful and failed)
+        sortedSuggestions.forEach(suggestion => {
+          dismissError(suggestion.originalError.id);
+        });
+        
+        console.log('🤖 Successfully applied', appliedCount, 'corrections and dismissed all errors');
+      } else {
+        console.log('🤖 No changes applied, but clearing errors to prevent UI confusion');
+        // Clear errors even if no changes were applied to prevent UI confusion
+        sortedSuggestions.forEach(suggestion => {
+          dismissError(suggestion.originalError.id);
+        });
+      }
+    } catch (err) {
+      console.error('🤖 Error during bulk application:', err);
+      // Clear errors to prevent UI confusion even if there was an error
+      grammarSuggestions.forEach(suggestion => {
         dismissError(suggestion.originalError.id);
       });
-    } else {
-      console.log('🤖 No changes applied');
     }
   };
 

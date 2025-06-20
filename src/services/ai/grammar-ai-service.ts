@@ -5,10 +5,12 @@
  * 
  * This service provides GPT-4 powered grammar analysis as a replacement for LanguageTool,
  * while maintaining compatibility with the existing grammar analysis interface.
+ * Enhanced for D&D campaign writing with fantasy terminology recognition.
  */
 
 import OpenAI from 'openai';
 import type { UserProfile } from '@/types/auth';
+import { isDnDTerm, getDnDTermInfo, ALL_DND_TERMS, CAMPAIGN_STYLE_GUIDELINES } from './dnd-dictionary';
 
 // Use the same OpenAI client initialization as the main service
 let openai: OpenAI | null = null;
@@ -20,9 +22,9 @@ try {
       apiKey,
       dangerouslyAllowBrowser: true // Only for demo - use backend in production
     });
-    console.log('🤖 AI Grammar Service: OpenAI client initialized');
+    console.log('🤖 AI Grammar Service: OpenAI client initialized with D&D enhancement');
   } else {
-    console.log('🤖 AI Grammar Service: Running in demo mode');
+    console.log('🤖 AI Grammar Service: Running in demo mode with D&D enhancement');
   }
 } catch (error) {
   console.warn('🤖 AI Grammar Service: Failed to initialize OpenAI client:', error);
@@ -51,6 +53,15 @@ export interface AIGrammarError {
     description: string;
     category: string;
   };
+  // Enhanced for D&D
+  dndContext?: {
+    isDnDTerm: boolean;
+    termInfo?: {
+      term: string;
+      category: string;
+      description?: string;
+    };
+  };
 }
 
 export interface AIGrammarStatistics {
@@ -64,10 +75,99 @@ export interface AIGrammarStatistics {
     spelling: number;
     style: number;
   };
+  // Enhanced for D&D campaigns
+  campaignMetrics?: {
+    dndTerms: number;
+    dialogueRatio: number;
+    descriptiveRatio: number;
+    styleBalance: 'dialogue-heavy' | 'description-heavy' | 'balanced';
+  };
 }
 
 /**
- * Analyze text for grammar, spelling, and style issues using GPT-4
+ * Create D&D-aware system prompt for campaign analysis
+ */
+function createDnDSystemPrompt(options: {
+  enableGrammar?: boolean;
+  enableSpelling?: boolean;
+  enableStyle?: boolean;
+  language?: string;
+}): string {
+  const dndTermsList = ALL_DND_TERMS.slice(0, 50).map(term => term.term).join(', ');
+  
+  return `You are an expert proofreader specializing in Dungeons & Dragons campaign writing. Analyze the following text for spelling, grammar, and style errors with these enhanced capabilities:
+
+D&D TERMINOLOGY AWARENESS:
+You understand official D&D 5e terminology and should NOT flag these as errors:
+- Races: ${dndTermsList}
+- Classes, spells, creatures, locations, and game terms from official D&D 5e content
+- Fantasy terminology that fits the D&D universe
+
+CAMPAIGN WRITING STYLE GUIDELINES:
+1. DIALOGUE SECTIONS: Should use conversational style
+   - Natural speech patterns appropriate to fantasy characters
+   - Contractions and colloquialisms are acceptable in dialogue
+   - Vary sentence length for natural rhythm
+   - Character voice should be distinct and appropriate
+
+2. DESCRIPTIVE/NARRATIVE SECTIONS: Should use descriptive style
+   - Vivid, sensory language to create atmosphere
+   - Active voice for dynamic scenes
+   - Clear mental images without overwhelming detail
+   - Fantasy-appropriate metaphors and similes
+   - Leave room for player agency (avoid overly prescriptive language)
+
+3. CAMPAIGN STRUCTURE:
+   - Maintain consistent narrative voice
+   - Clear transitions between scenes
+   - Balance exposition with action
+   - Appropriate pacing for tabletop gameplay
+
+CRITICAL REQUIREMENTS:
+1. Each error must be reported as a SEPARATE issue - do not combine multiple errors
+2. The "OriginalFragment" must be the SMALLEST possible exact substring that contains the error
+3. Only report ONE error per OriginalFragment
+4. The "SuggestedCorrection" should only fix that ONE specific error
+5. DO NOT flag legitimate D&D terms as spelling errors
+
+GRAMMAR RULES:
+- "who's" vs "who've": "who's" = "who is/has", "who've" = "who have"
+  * "team, who's been working" = CORRECT (team has been working)
+  * "people, who've been working" = CORRECT (people have been working)
+- Subject-verb agreement: Match the verb to the actual subject
+  * "He dont" → "He doesn't" (third person singular)
+  * "They dont" → "They don't" (plural)
+
+IMPORTANT: Look for these common errors:
+- Missing apostrophes in possessives (companys → company's)
+- Wrong there/their/they're usage
+- Missing contractions with correct subject-verb agreement
+- Spelling errors (excelent → excellent, unnecesary → unnecessary)
+- Wrong word choices (loose vs lose)
+- Style issues specific to campaign writing
+
+VALIDATION: Before reporting an error, ensure:
+- The OriginalFragment and SuggestedCorrection are DIFFERENT
+- The error actually needs fixing
+- You're not suggesting the same text as the original
+- The term is not a legitimate D&D 5e term
+
+Focus on:
+${options.enableGrammar !== false ? '- Grammar errors (subject-verb agreement, tense, pronouns)\n' : ''}${options.enableSpelling !== false ? '- Spelling mistakes (excluding D&D terminology)\n' : ''}${options.enableStyle !== false ? '- Style improvements for campaign writing (dialogue vs description, clarity, engagement)\n' : ''}
+Return each error in this EXACT format:
+
+ISSUE_START
+Type: grammar|spelling|style
+Message: Brief description of the error
+OriginalFragment: exact text to replace
+SuggestedCorrection: corrected text
+Explanation: Why this is an error and why the correction is better (consider D&D campaign context)
+Confidence: 0.0-1.0
+ISSUE_END`;
+}
+
+/**
+ * Analyze text for grammar, spelling, and style issues using GPT-4 with D&D awareness
  */
 export async function analyzeTextWithAI(
   text: string,
@@ -91,78 +191,38 @@ export async function analyzeTextWithAI(
         paragraphCount: 0,
         readingTime: 0,
         qualityScore: 0,
-        issueCount: { grammar: 0, spelling: 0, style: 0 }
+        issueCount: { grammar: 0, spelling: 0, style: 0 },
+        campaignMetrics: {
+          dndTerms: 0,
+          dialogueRatio: 0,
+          descriptiveRatio: 0,
+          styleBalance: 'balanced'
+        }
       }
     };
   }
 
-  console.log('🤖 AI Grammar Service: Analyzing text with GPT-4...');
-  console.log('🤖 AI Grammar Service: Text to analyze:', text);
-  console.log('🤖 AI Grammar Service: OpenAI client status:', openai ? 'INITIALIZED' : 'NOT INITIALIZED');
+  console.log('🤖 D&D Grammar Service: Analyzing campaign text with enhanced D&D awareness...');
 
   // Calculate basic statistics
   const words = text.trim().split(/\s+/);
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
   const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
 
+  // Calculate D&D-specific metrics
+  const campaignMetrics = calculateCampaignMetrics(text, words);
+
   // Production OpenAI implementation
   if (openai) {
     try {
-      const systemPrompt = `You are an expert proofreader. Analyze the following text for spelling, grammar, and style errors. 
-
-CRITICAL REQUIREMENTS:
-1. Each error must be reported as a SEPARATE issue - do not combine multiple errors
-2. The "OriginalFragment" must be the SMALLEST possible exact substring that contains the error
-3. Only report ONE error per OriginalFragment
-4. The "SuggestedCorrection" should only fix that ONE specific error
-
-Examples:
-- For "companys CEO" → Report "companys" → "company's" (NOT the whole phrase)  
-- For "there going" → Report "there" → "they're" (NOT "there going" → "they're going")
-- For "dont think" → Report "dont" → "don't" (NOT the whole phrase)
-
-GRAMMAR RULES:
-- "who's" vs "who've": "who's" = "who is/has", "who've" = "who have"
-  * "team, who's been working" = CORRECT (team has been working)
-  * "people, who've been working" = CORRECT (people have been working)
-- Subject-verb agreement: Match the verb to the actual subject
-  * "He dont" → "He doesn't" (third person singular)
-  * "They dont" → "They don't" (plural)
-
-IMPORTANT: Look for these common errors:
-- Missing apostrophes in possessives (companys → company's)
-- Wrong there/their/they're usage
-- Missing contractions with correct subject-verb agreement
-- Spelling errors (excelent → excellent, unnecesary → unnecessary)
-- Wrong word choices (loose vs lose)
-
-VALIDATION: Before reporting an error, ensure:
-- The OriginalFragment and SuggestedCorrection are DIFFERENT
-- The error actually needs fixing
-- You're not suggesting the same text as the original
-
-Focus on:
-${options.enableGrammar !== false ? '- Grammar errors (subject-verb agreement, tense, pronouns)\n' : ''}${options.enableSpelling !== false ? '- Spelling mistakes\n' : ''}${options.enableStyle !== false ? '- Style improvements (clarity, conciseness, tone)\n' : ''}
-Return each error in this EXACT format:
-
-ISSUE_START
-Type: grammar|spelling|style
-Message: Brief description of the error
-OriginalFragment: exact text to replace
-SuggestedCorrection: corrected text
-Explanation: Why this is an error and why the correction is better
-Confidence: 0.0-1.0
-ISSUE_END`;
-
-      const userPrompt = `Please analyze this text for errors:
+      const systemPrompt = createDnDSystemPrompt(options);
+      const userPrompt = `Please analyze this D&D campaign text for errors:
 
 "${text}"
 
-Provide analysis with exact substrings for each issue found. Make sure the "OriginalFragment" is an exact match from the text.`;
+Provide analysis with exact substrings for each issue found. Remember to respect official D&D 5e terminology and consider campaign writing style guidelines.`;
 
-      console.log('🤖 AI Grammar Service: Calling OpenAI API...');
-      console.log('🤖 AI Grammar Service: User profile:', userProfile);
-      console.log('🤖 AI Grammar Service: Options:', options);
+      console.log('🤖 D&D Grammar Service: Calling OpenAI API with D&D-enhanced prompt...');
       
       const response = await openai.chat.completions.create({
         model: 'gpt-4',
@@ -174,36 +234,134 @@ Provide analysis with exact substrings for each issue found. Make sure the "Orig
         max_tokens: 2000,
       });
 
-      console.log('🤖 AI Grammar Service: OpenAI response received');
-      console.log('🤖 AI Grammar Service: Raw response:', response.choices[0].message.content);
+      console.log('🤖 D&D Grammar Service: OpenAI response received');
       
       const errors = parseAIGrammarResponse(response.choices[0].message.content, text);
-      const statistics = calculateStatistics(words, sentences, paragraphs, errors);
+      const statistics = calculateStatistics(words, sentences, paragraphs, errors, campaignMetrics);
 
-      console.log('🤖 AI Grammar Service: Parsed errors:', errors.length);
-      console.log('🤖 AI Grammar Service: Statistics:', statistics);
+      console.log('🤖 D&D Grammar Service: Analysis complete with D&D enhancements');
+      console.log('🤖 D&D Grammar Service: Found', campaignMetrics.dndTerms, 'D&D terms');
 
       return { errors, statistics };
     } catch (error) {
-      console.error('🤖 AI Grammar Service: Error calling OpenAI API:', error);
-      console.log('🤖 AI Grammar Service: Falling back to demo mode due to API error');
+      console.error('🤖 D&D Grammar Service: Error calling OpenAI API:', error);
+      console.log('🤖 D&D Grammar Service: Falling back to demo mode');
       // Fall back to demo mode
     }
   } else {
-    console.log('🤖 AI Grammar Service: OpenAI client not initialized - using demo mode');
+    console.log('🤖 D&D Grammar Service: OpenAI client not initialized - using demo mode');
   }
 
-  // Fallback to demo mode
-  console.log('🤖 AI Grammar Service: Using demo mode');
-  console.log('🤖 AI Grammar Service: Demo mode - analyzing text:', text);
+  // Fallback to demo mode with D&D enhancements
+  console.log('🤖 D&D Grammar Service: Using enhanced demo mode');
   
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  const errors = generateDemoErrors(text);
-  const statistics = calculateStatistics(words, sentences, paragraphs, errors);
+  const errors = generateDnDDemoErrors(text);
+  const statistics = calculateStatistics(words, sentences, paragraphs, errors, campaignMetrics);
 
   return { errors, statistics };
+}
+
+/**
+ * Generate demo errors for D&D campaign content
+ */
+function generateDnDDemoErrors(text: string): AIGrammarError[] {
+  const errors: AIGrammarError[] = [];
+  
+  // Don't flag D&D terms as spelling errors
+  const words = text.split(/\s+/);
+  let position = 0;
+  
+  for (const word of words) {
+    const cleanWord = word.replace(/[^\w]/g, '');
+    const wordStart = text.indexOf(word, position);
+    const wordEnd = wordStart + word.length;
+    
+    // Skip if it's a valid D&D term
+    if (isDnDTerm(cleanWord)) {
+      position = wordEnd;
+      continue;
+    }
+    
+    // Check for common errors that aren't D&D terms
+    if (word.toLowerCase() === 'alot') {
+      errors.push({
+        id: `dnd-demo-${errors.length + 1}`,
+        message: 'Incorrect spelling. Use "a lot" as two words.',
+        shortMessage: 'Spelling error',
+        type: 'spelling',
+        category: 'spelling',
+        position: { start: wordStart, end: wordEnd },
+        context: {
+          text: text.substring(Math.max(0, wordStart - 20), Math.min(text.length, wordEnd + 20)),
+          highlightStart: Math.min(20, wordStart),
+          highlightEnd: Math.min(20, wordStart) + word.length
+        },
+        suggestions: ['a lot'],
+        confidence: 0.95
+      });
+    }
+    
+    position = wordEnd;
+  }
+  
+  // Add some campaign-specific style suggestions
+  if (text.includes('The players must')) {
+    const index = text.indexOf('The players must');
+    errors.push({
+      id: `dnd-style-${errors.length + 1}`,
+      message: 'Consider more flexible language to preserve player agency',
+      shortMessage: 'Campaign style',
+      type: 'style',
+      category: 'style',
+      position: { start: index, end: index + 16 },
+      context: {
+        text: text.substring(Math.max(0, index - 20), Math.min(text.length, index + 36)),
+        highlightStart: Math.min(20, index),
+        highlightEnd: Math.min(20, index) + 16
+      },
+      suggestions: ['The players can', 'Players might', 'The characters could'],
+      confidence: 0.75
+    });
+  }
+  
+  return errors;
+}
+
+/**
+ * Calculate D&D campaign-specific metrics
+ */
+function calculateCampaignMetrics(text: string, words: string[]): {
+  dndTerms: number;
+  dialogueRatio: number;
+  descriptiveRatio: number;
+  styleBalance: 'dialogue-heavy' | 'description-heavy' | 'balanced';
+} {
+  // Count D&D terms
+  const dndTerms = words.filter(word => isDnDTerm(word.replace(/[^\w]/g, ''))).length;
+
+  // Estimate dialogue vs description ratio
+  const dialogueMatches = text.match(/"[^"]*"/g) || [];
+  const totalDialogueChars = dialogueMatches.join('').length;
+  const dialogueRatio = totalDialogueChars / text.length;
+  const descriptiveRatio = 1 - dialogueRatio;
+
+  // Determine style balance
+  let styleBalance: 'dialogue-heavy' | 'description-heavy' | 'balanced' = 'balanced';
+  if (dialogueRatio > 0.6) {
+    styleBalance = 'dialogue-heavy';
+  } else if (descriptiveRatio > 0.8) {
+    styleBalance = 'description-heavy';
+  }
+
+  return {
+    dndTerms,
+    dialogueRatio: Math.round(dialogueRatio * 100) / 100,
+    descriptiveRatio: Math.round(descriptiveRatio * 100) / 100,
+    styleBalance
+  };
 }
 
 /**
@@ -477,7 +635,13 @@ function calculateStatistics(
   words: string[],
   sentences: string[],
   paragraphs: string[],
-  errors: AIGrammarError[]
+  errors: AIGrammarError[],
+  campaignMetrics: {
+    dndTerms: number;
+    dialogueRatio: number;
+    descriptiveRatio: number;
+    styleBalance: 'dialogue-heavy' | 'description-heavy' | 'balanced';
+  }
 ): AIGrammarStatistics {
   const grammarCount = errors.filter(e => e.type === 'grammar').length;
   const spellingCount = errors.filter(e => e.type === 'spelling').length;
@@ -496,6 +660,12 @@ function calculateStatistics(
       grammar: grammarCount,
       spelling: spellingCount,
       style: styleCount
+    },
+    campaignMetrics: {
+      dndTerms: campaignMetrics.dndTerms,
+      dialogueRatio: campaignMetrics.dialogueRatio,
+      descriptiveRatio: campaignMetrics.descriptiveRatio,
+      styleBalance: campaignMetrics.styleBalance
     }
   };
 } 
