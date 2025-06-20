@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAIGrammarAnalysis } from '@/hooks/use-ai-grammar-analysis';
-import { generateWritingSuggestions, generateContent, analyzeWriting, type WritingSuggestion, type ContentGenerationRequest, type WritingAnalysis } from '@/services/ai/openai-service';
+import { type WritingSuggestion } from '@/services/ai/openai-service';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { extractPlainTextFromHTML } from '@/lib/utils';
@@ -37,7 +37,7 @@ export function UnifiedAIAssistant({
   className = ''
 }: UnifiedAIAssistantProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis' | 'campaign' | 'fantasy-names' | 'monster-reskin' | 'backgrounds'>('errors');
+  const [activeTab, setActiveTab] = useState<'errors' | 'campaign' | 'fantasy-names' | 'monster-reskin' | 'backgrounds'>('errors');
   
   // AI Grammar Analysis
   const {
@@ -53,19 +53,7 @@ export function UnifiedAIAssistant({
     minLength: 10
   });
 
-  // AI Suggestions State
-  const [suggestions, setSuggestions] = useState<WritingSuggestion[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
-  // Content Generation State
-  const [generationPrompt, setGenerationPrompt] = useState('');
-  const [generationType, setGenerationType] = useState<'paragraph' | 'outline' | 'bullet_points' | 'introduction'>('paragraph');
-  const [generationTone, setGenerationTone] = useState<'professional' | 'casual' | 'academic' | 'creative'>('professional');
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  // Writing Analysis State
-  const [analysis, setAnalysis] = useState<WritingAnalysis | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Auto-analyze grammar when content changes
   useEffect(() => {
@@ -116,64 +104,7 @@ export function UnifiedAIAssistant({
     });
   }, [grammarErrors, content]);
 
-  // Load AI suggestions
-  const loadSuggestions = async () => {
-    if (!user || !content.trim()) return;
 
-    setIsLoadingSuggestions(true);
-    try {
-      console.log('🤖 Loading AI writing suggestions...');
-      const aiSuggestions = await generateWritingSuggestions(content, user);
-      setSuggestions(aiSuggestions);
-      console.log('🤖 AI suggestions loaded:', aiSuggestions.length);
-    } catch (error) {
-      console.error('🤖 Error loading AI suggestions:', error);
-    } finally {
-      setIsLoadingSuggestions(false);
-    }
-  };
-
-  // Generate content
-  const handleGenerateContent = async () => {
-    if (!user || !generationPrompt.trim()) return;
-
-    setIsGenerating(true);
-    try {
-      console.log('🤖 Generating content...');
-      const request: ContentGenerationRequest = {
-        prompt: generationPrompt,
-        type: generationType,
-        tone: generationTone,
-        length: 'medium'
-      };
-      
-      const generatedContent = await generateContent(request, user);
-      onInsertContent(generatedContent);
-      setGenerationPrompt('');
-      console.log('🤖 Content generated and inserted');
-    } catch (error) {
-      console.error('🤖 Error generating content:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Analyze writing
-  const handleAnalyzeWriting = async () => {
-    if (!user || !content.trim()) return;
-
-    setIsAnalyzing(true);
-    try {
-      console.log('🤖 Analyzing writing...');
-      const result = await analyzeWriting(content, user);
-      setAnalysis(result);
-      console.log('🤖 Writing analysis complete');
-    } catch (error) {
-      console.error('🤖 Error analyzing writing:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
 
   // Handle suggestion application
   const handleApplySuggestion = (suggestion: WritingSuggestion | AIGrammarSuggestion) => {
@@ -320,36 +251,7 @@ export function UnifiedAIAssistant({
             >
               Errors ({grammarErrors.length})
             </button>
-            <button
-              onClick={() => setActiveTab('suggestions')}
-              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'suggestions'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Suggestions
-            </button>
-            <button
-              onClick={() => setActiveTab('generate')}
-              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'generate'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Generate
-            </button>
-            <button
-              onClick={() => setActiveTab('analysis')}
-              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'analysis'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Analysis
-            </button>
+
             <button
               onClick={() => setActiveTab('campaign')}
               className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
@@ -493,180 +395,11 @@ export function UnifiedAIAssistant({
           </div>
         )}
 
-        {/* Suggestions Tab */}
-        {activeTab === 'suggestions' && (
-          <div className="h-full flex flex-col space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">AI Suggestions</h3>
-                <p className="text-sm text-slate-600">Enhance your writing with AI-powered suggestions</p>
-              </div>
-              <Button
-                size="sm"
-                onClick={loadSuggestions}
-                disabled={isLoadingSuggestions || !content.trim()}
-              >
-                {isLoadingSuggestions ? 'Loading...' : 'Get Suggestions'}
-              </Button>
-            </div>
 
-            <div className="space-y-3 flex-1 overflow-y-auto">
-              {suggestions.map((suggestion) => (
-                <div key={suggestion.id} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                          {suggestion.type}
-                        </span>
-                        <span className="text-sm font-medium text-slate-900">{suggestion.title}</span>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-2">{suggestion.description}</p>
-                      <p className="text-sm text-slate-500">{suggestion.reasoning}</p>
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {Math.round(suggestion.confidence * 100)}%
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleApplySuggestion(suggestion)}
-                    className="text-xs"
-                  >
-                    Apply Suggestion
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* Generate Tab */}
-        {activeTab === 'generate' && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Generate Content</h3>
-              <p className="text-sm text-slate-600">Create new content with AI assistance</p>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  What would you like to generate?
-                </label>
-                <textarea
-                  value={generationPrompt}
-                  onChange={(e) => setGenerationPrompt(e.target.value)}
-                  placeholder="Describe what you want to write about..."
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none"
-                  rows={3}
-                />
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
-                  <select
-                    value={generationType}
-                    onChange={(e) => setGenerationType(e.target.value as typeof generationType)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                  >
-                    <option value="paragraph">Paragraph</option>
-                    <option value="outline">Outline</option>
-                    <option value="bullet_points">Bullet Points</option>
-                    <option value="introduction">Introduction</option>
-                  </select>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Tone</label>
-                  <select
-                    value={generationTone}
-                    onChange={(e) => setGenerationTone(e.target.value as typeof generationTone)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                  >
-                    <option value="professional">Professional</option>
-                    <option value="casual">Casual</option>
-                    <option value="academic">Academic</option>
-                    <option value="creative">Creative</option>
-                  </select>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleGenerateContent}
-                disabled={isGenerating || !generationPrompt.trim()}
-                className="w-full"
-              >
-                {isGenerating ? 'Generating...' : 'Generate Content'}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Analysis Tab */}
-        {activeTab === 'analysis' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">Writing Analysis</h3>
-                <p className="text-sm text-slate-600">Get detailed feedback on your writing</p>
-              </div>
-              <Button
-                size="sm"
-                onClick={handleAnalyzeWriting}
-                disabled={isAnalyzing || !content.trim()}
-              >
-                {isAnalyzing ? 'Analyzing...' : 'Analyze'}
-              </Button>
-            </div>
-
-            {analysis && (
-              <div className="space-y-4">
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-sm font-medium">Overall Score</span>
-                    <span className="text-2xl font-bold text-green-600">{analysis.overallScore}/100</span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="text-sm font-medium text-slate-900 mb-2">Strengths</h4>
-                      <ul className="text-sm text-slate-600 space-y-1">
-                        {analysis.strengths.map((strength, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-green-500 mt-0.5">✓</span>
-                            {strength}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-sm font-medium text-slate-900 mb-2">Areas for Improvement</h4>
-                      <ul className="text-sm text-slate-600 space-y-1">
-                        {analysis.improvements.map((improvement, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-blue-500 mt-0.5">→</span>
-                            {improvement}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-sm font-medium text-slate-900 mb-2">Tone Analysis</h4>
-                      <div className="text-sm text-slate-600">
-                        <p><strong>Detected:</strong> {analysis.toneAnalysis.detected}</p>
-                        <p><strong>Consistency:</strong> {Math.round(analysis.toneAnalysis.consistency * 100)}%</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Campaign Generator Tab */}
         {activeTab === 'campaign' && (
