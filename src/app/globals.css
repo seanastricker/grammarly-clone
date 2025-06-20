@@ -648,4 +648,89 @@ button:active:not(:disabled) {
 
 .grammar-error-new {
   animation: grammar-error-pulse 1s ease-in-out;
+}
+
+/* ============================================================================
+   D&D Stat Block Styling
+   ============================================================================ */
+
+.stat-block {
+  background: #fdf6e3;
+  border: 2px solid #e85d04;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'Book Antiqua', 'Palatino Linotype', serif;
+  color: #3c2415;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.stat-block-name {
+  color: #8b0000;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  text-align: center;
+  border-bottom: 1px solid #e85d04;
+  padding-bottom: 4px;
+}
+
+.stat-block-meta {
+  font-style: italic;
+  text-align: center;
+  margin: 4px 0 8px 0;
+  color: #8b4513;
+}
+
+.stat-block-divider {
+  border: none;
+  border-top: 1px solid #e85d04;
+  margin: 8px 0;
+}
+
+.stat-block-abilities {
+  width: 100%;
+  margin: 8px 0;
+  border-collapse: collapse;
+}
+
+.stat-block-abilities th {
+  background: #8b0000;
+  color: white;
+  padding: 4px 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.stat-block-abilities td {
+  text-align: center;
+  padding: 4px 8px;
+  border: 1px solid #e85d04;
+  background: #fff8e1;
+  font-weight: bold;
+}
+
+.stat-block h4 {
+  color: #8b0000;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 12px 0 4px 0;
+  border-bottom: 1px solid #e85d04;
+  padding-bottom: 2px;
+}
+
+.stat-block p {
+  margin: 4px 0;
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+.stat-block strong {
+  font-weight: bold;
+  color: #8b0000;
+}
+
+.stat-block em {
+  font-style: italic;
 } 

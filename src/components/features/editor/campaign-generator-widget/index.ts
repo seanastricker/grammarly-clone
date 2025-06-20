@@ -1,0 +1,1 @@
+export { CampaignGeneratorWidget } from '../campaign-generator-widget'; 

@@ -684,9 +684,9 @@ export const EditorPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex relative">
-        {/* Left Sidebar - Stats */}
+        {/* Left Sidebar - Stats (10% width) */}
         {showStats && (
-          <div className="w-80 bg-white border-r border-slate-200 shadow-sm overflow-hidden animate-slide-in-left">
+          <div className="w-[10%] bg-white border-r border-slate-200 shadow-sm overflow-hidden animate-slide-in-left">
             <StatsSidebar
               document={document}
               stats={stats}
@@ -697,9 +697,18 @@ export const EditorPage: React.FC = () => {
           </div>
         )}
 
-        {/* Editor */}
-        <main className="flex-1 overflow-hidden relative">
-          <div className="h-full p-8 max-w-4xl mx-auto">
+        {/* Gap between Stats and Editor (5% width) */}
+        {showStats && <div className="w-[5%]" />}
+
+        {/* Editor (40% width when both sidebars shown, flexible when not) */}
+        <main className={cn(
+          "overflow-hidden relative transition-all duration-300",
+          showStats && showAISuggestions ? "w-[40%]" : 
+          showStats && !showAISuggestions ? "w-[85%]" :
+          !showStats && showAISuggestions ? "w-[55%]" :
+          "w-full"
+        )}>
+          <div className="h-full p-8">
             <div className="h-full bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <RichTextEditor
                 content={content}
@@ -720,9 +729,12 @@ export const EditorPage: React.FC = () => {
           </div>
         </main>
 
-        {/* Right Sidebar - AI Assistant */}
+        {/* Gap between Editor and AI Assistant (5% width) */}
+        {showAISuggestions && <div className="w-[5%]" />}
+
+        {/* Right Sidebar - AI Assistant (40% width) */}
         {showAISuggestions && (
-          <div className="w-96 bg-white border-l border-slate-200 shadow-sm overflow-hidden animate-slide-in-right">
+          <div className="w-[40%] bg-white border-l border-slate-200 shadow-sm overflow-hidden animate-slide-in-right">
             <UnifiedAIAssistant
               content={content}
               onApplySuggestion={handleApplyAISuggestion}

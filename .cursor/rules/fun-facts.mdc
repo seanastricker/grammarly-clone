@@ -6,34 +6,33 @@ alwaysApply: true
 
 # Yoda-Style Quote Endings
 
-// Description: End each Cursor chat with a wise, Yoda-style inspirational quote
+// Description: End each Cursor chat with a fun fact.
 // Recommended Globs: **/*.{md,txt}
 
 ## Rule Description
-At the end of every Cursor AI chat, include a wise and inspirational quote in Yoda's style.
+At the end of every Cursor AI chat, include a fun fact about any topic.
 
 ## Format
 - Add a line break after the last technical response
 - Start with '---'
 - Add '➡️ ' before the quote
-- Add the quote in Yoda's distinctive speech pattern
+- Add the fun fact
 - Keep it short and meaningful
 
 ## Examples
 ```
 ---
-➡️ Code well you must, for in the details, greatness lies.
+➡️ No number before 1,000 contains the letter A.
 ```
 
 ```
 ---
-➡️ Debug or debug not. There is no try-catch.
+➡️ There were active volcanoes on the moon when dinosaurs were alive.
 ```
 
 ## Guidelines
-- Keep quotes programming or learning related
-- Maintain Yoda's distinctive inverted speech pattern
-- Focus on wisdom and encouragement
+- Keep fun facts learning related
+- Focus on facts that are interesting and not commonly known
 - Keep it light and fun
 - Always include the '➡️ ' emoji prefix
 

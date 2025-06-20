@@ -39,16 +39,16 @@ These user stories should be implemented **in sequential order**, with each stor
 ## User Story 2: Quick Campaign Generation & Refinement
 
 **As a** Dungeon Master,  
-**I want to** use the AI Writing Assistant to draft a short campaign that would last roughly 2 hours,  
+**I want to** use the AI Writing Assistant to draft a short campaign that would last roughly 1-4 hours,  
 **So that** I can quickly create a campaign on the fly and chat back and forth with the Writing Assistant to fine-tune the campaign to my liking.
 
 ### Acceptance Criteria
-- [ ] AI can generate a complete 2-hour campaign outline including plot hooks, encounters, and resolution
-- [ ] Campaign includes appropriate encounter balance for the specified duration
-- [ ] Interactive chat interface allows for real-time campaign refinement
-- [ ] DM can specify campaign parameters (level range, theme, setting, etc.)
-- [ ] AI maintains campaign coherence throughout the refinement process
-- [ ] Generated campaign includes necessary stat blocks and reference materials
+- [X] AI can generate a complete 2-hour campaign outline including plot hooks, encounters, and resolution
+- [X] Campaign includes appropriate encounter balance for the specified duration
+- [X] Interactive chat interface allows for real-time campaign refinement
+- [X] DM can specify campaign parameters (level range, theme, setting, etc.)
+- [X] AI maintains campaign coherence throughout the refinement process
+- [ ] Generated campaign includes necessary stat blocks and reference materials (removed by user request)
 
 ### Technical Requirements
 - Conversational AI interface for iterative campaign development

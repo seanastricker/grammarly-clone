@@ -10,6 +10,7 @@ import { generateWritingSuggestions, generateContent, analyzeWriting, type Writi
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { extractPlainTextFromHTML } from '@/lib/utils';
+import { CampaignGeneratorWidget } from './campaign-generator-widget';
 
 interface UnifiedAIAssistantProps {
   content: string;
@@ -33,7 +34,7 @@ export function UnifiedAIAssistant({
   className = ''
 }: UnifiedAIAssistantProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis'>('errors');
+  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis' | 'campaign'>('errors');
   
   // AI Grammar Analysis
   const {
@@ -346,6 +347,16 @@ export function UnifiedAIAssistant({
             >
               Analysis
             </button>
+            <button
+              onClick={() => setActiveTab('campaign')}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'campaign'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Campaign
+            </button>
           </div>
         </div>
       </div>
@@ -622,6 +633,14 @@ export function UnifiedAIAssistant({
               </div>
             )}
           </div>
+        )}
+
+        {/* Campaign Generator Tab */}
+        {activeTab === 'campaign' && (
+          <CampaignGeneratorWidget
+            onCampaignGenerated={onInsertContent}
+            className="h-full"
+          />
         )}
       </div>
     </div>
