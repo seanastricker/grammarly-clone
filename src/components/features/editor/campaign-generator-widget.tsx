@@ -206,72 +206,72 @@ export function CampaignGeneratorWidget({
   };
 
   const formatCampaignForEditor = (campaign: GeneratedCampaign): string => {
-    let content = `<h1>${campaign.title}</h1>\n\n`;
+    let content = `<h1>${campaign.title}</h1>`;
     
-    content += `<h2>Campaign Overview</h2>\n`;
-    content += `<p><strong>Duration:</strong> ${campaign.parameters.duration} hours</p>\n`;
-    content += `<p><strong>Players:</strong> ${campaign.parameters.playerCount} level ${campaign.parameters.characterLevel} characters</p>\n`;
-    content += `<p><strong>Setting:</strong> ${campaign.parameters.setting}</p>\n`;
-    content += `<p><strong>Theme:</strong> ${campaign.parameters.theme}</p>\n\n`;
+    content += `<h2>Campaign Overview</h2>`;
+    content += `<p><strong>Duration:</strong> ${campaign.parameters.duration} hours</p>`;
+    content += `<p><strong>Players:</strong> ${campaign.parameters.playerCount} level ${campaign.parameters.characterLevel} characters</p>`;
+    content += `<p><strong>Setting:</strong> ${campaign.parameters.setting}</p>`;
+    content += `<p><strong>Theme:</strong> ${campaign.parameters.theme}</p>`;
     
-    content += `<h2>Introduction</h2>\n`;
-    content += `<p>${campaign.introduction}</p>\n\n`;
+    content += `<h2>Introduction</h2>`;
+    content += `<p>${campaign.introduction}</p>`;
     
     if (campaign.plotHooks.length > 0) {
-      content += `<h2>Plot Hooks</h2>\n<ul>\n`;
+      content += `<h2>Plot Hooks</h2><ul>`;
       campaign.plotHooks.forEach(hook => {
-        content += `<li>${hook}</li>\n`;
+        content += `<li>${hook}</li>`;
       });
-      content += `</ul>\n\n`;
+      content += `</ul>`;
     }
     
-    content += `<h2>Encounters</h2>\n`;
+    content += `<h2>Encounters</h2>`;
     campaign.encounters.forEach((encounter, index) => {
-      content += `<h3>Encounter ${index + 1}: ${encounter.title}</h3>\n`;
-      content += `<p><strong>Type:</strong> ${encounter.type}</p>\n`;
-      content += `<p><strong>Duration:</strong> ${encounter.estimatedDuration} minutes</p>\n`;
-      content += `<p>${encounter.description}</p>\n\n`;
+      content += `<h3>Encounter ${index + 1}: ${encounter.title}</h3>`;
+      content += `<p><strong>Type:</strong> ${encounter.type}</p>`;
+      content += `<p><strong>Duration:</strong> ${encounter.estimatedDuration} minutes</p>`;
+      content += `<p>${encounter.description}</p>`;
     });
     
     if (campaign.npcs.length > 0) {
-      content += `<h2>NPCs</h2>\n`;
+      content += `<h2>NPCs</h2>`;
       campaign.npcs.forEach(npc => {
-        content += `<h3>${npc.name}</h3>\n`;
-        content += `<p><strong>Race:</strong> ${npc.race} | <strong>Role:</strong> ${npc.role}</p>\n`;
-        content += `<p><strong>Personality:</strong> ${npc.personality}</p>\n`;
-        content += `<p><strong>Motivation:</strong> ${npc.motivation}</p>\n`;
-        content += `<p>${npc.description}</p>\n\n`;
+        content += `<h3>${npc.name}</h3>`;
+        content += `<p><strong>Race:</strong> ${npc.race} | <strong>Role:</strong> ${npc.role}</p>`;
+        content += `<p><strong>Personality:</strong> ${npc.personality}</p>`;
+        content += `<p><strong>Motivation:</strong> ${npc.motivation}</p>`;
+        content += `<p>${npc.description}</p>`;
       });
     }
     
     if (campaign.locations.length > 0) {
-      content += `<h2>Locations</h2>\n`;
+      content += `<h2>Locations</h2>`;
       campaign.locations.forEach(location => {
-        content += `<h3>${location.name}</h3>\n`;
-        content += `<p><strong>Type:</strong> ${location.type}</p>\n`;
-        content += `<p>${location.description}</p>\n\n`;
+        content += `<h3>${location.name}</h3>`;
+        content += `<p><strong>Type:</strong> ${location.type}</p>`;
+        content += `<p>${location.description}</p>`;
       });
     }
     
     if (campaign.statBlocks && campaign.statBlocks.length > 0) {
-      content += `<h2>Stat Blocks</h2>\n`;
+      content += `<h2>Stat Blocks</h2>`;
       campaign.statBlocks.forEach(statBlock => {
-        content += `<h3>${statBlock.name}</h3>\n`;
-        content += `<p><strong>Type:</strong> ${statBlock.type} | <strong>Challenge Rating:</strong> ${statBlock.challengeRating}</p>\n`;
-        content += `<pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; border: 1px solid #e9ecef; font-family: monospace; white-space: pre-wrap;">${statBlock.stats}</pre>\n\n`;
+        content += `<h3>${statBlock.name}</h3>`;
+        content += `<p><strong>Type:</strong> ${statBlock.type} | <strong>Challenge Rating:</strong> ${statBlock.challengeRating}</p>`;
+        content += `<pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; border: 1px solid #e9ecef; font-family: monospace; white-space: pre-wrap;">${statBlock.stats}</pre>`;
       });
     }
     
     if (campaign.handouts && campaign.handouts.length > 0) {
-      content += `<h2>Handouts & Resources</h2>\n`;
+      content += `<h2>Handouts & Resources</h2>`;
       campaign.handouts.forEach((handout, index) => {
-        content += `<h3>Handout ${index + 1}</h3>\n`;
-        content += `<div style="background: #fffbf0; padding: 12px; border-radius: 4px; border: 1px solid #f0e68c; white-space: pre-wrap;">${handout}</div>\n\n`;
+        content += `<h3>Handout ${index + 1}</h3>`;
+        content += `<div style="background: #fffbf0; padding: 12px; border-radius: 4px; border: 1px solid #f0e68c; white-space: pre-wrap;">${handout}</div>`;
       });
     }
     
-    content += `<h2>Conclusion</h2>\n`;
-    content += `<p>${campaign.conclusion}</p>\n\n`;
+    content += `<h2>Conclusion</h2>`;
+    content += `<p>${campaign.conclusion}</p>`;
     
     return content;
   };

@@ -482,86 +482,99 @@ export const EditorPage: React.FC = () => {
   const handleInsertAIContent = (generatedContent: string) => {
     console.log('🤖 Inserting AI generated content:', generatedContent);
     
-    // Convert markdown-style line breaks to HTML for TipTap editor
-    const convertMarkdownToHTML = (markdownText: string): string => {
-      // Split into lines and process each line
-      const lines = markdownText.split('\n');
-      const htmlLines: string[] = [];
-      let inList = false;
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const trimmedLine = line.trim();
+    // Check if content is already HTML (starts with HTML tags) or markdown
+    const isHtmlContent = generatedContent.trim().startsWith('<');
+    
+    let processedContent: string;
+    
+    if (isHtmlContent) {
+      // Content is already HTML, use it directly without markdown conversion
+      processedContent = generatedContent;
+      console.log('🤖 Content detected as HTML, using directly');
+    } else {
+      // Convert markdown-style line breaks to HTML for TipTap editor
+      const convertMarkdownToHTML = (markdownText: string): string => {
+        // Split into lines and process each line
+        const lines = markdownText.split('\n');
+        const htmlLines: string[] = [];
+        let inList = false;
         
-        if (trimmedLine === '') {
-          // Empty line - close any open list and add paragraph break
-          if (inList) {
-            htmlLines.push('</ul>');
-            inList = false;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmedLine = line.trim();
+          
+          if (trimmedLine === '') {
+            // Empty line - close any open list and add paragraph break
+            if (inList) {
+              htmlLines.push('</ul>');
+              inList = false;
+            }
+            htmlLines.push(''); // Will become paragraph break
+          } else if (trimmedLine.startsWith('### ')) {
+            // H3 header
+            if (inList) {
+              htmlLines.push('</ul>');
+              inList = false;
+            }
+            htmlLines.push(`<h3>${trimmedLine.substring(4)}</h3>`);
+          } else if (trimmedLine.startsWith('## ')) {
+            // H2 header
+            if (inList) {
+              htmlLines.push('</ul>');
+              inList = false;
+            }
+            htmlLines.push(`<h2>${trimmedLine.substring(3)}</h2>`);
+          } else if (trimmedLine.startsWith('# ')) {
+            // H1 header
+            if (inList) {
+              htmlLines.push('</ul>');
+              inList = false;
+            }
+            htmlLines.push(`<h1>${trimmedLine.substring(2)}</h1>`);
+          } else if (trimmedLine.startsWith('• ')) {
+            // Bullet point
+            if (!inList) {
+              htmlLines.push('<ul>');
+              inList = true;
+            }
+            htmlLines.push(`<li>${trimmedLine.substring(2)}</li>`);
+          } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
+            // Bold text (likely section labels)
+            if (inList) {
+              htmlLines.push('</ul>');
+              inList = false;
+            }
+            htmlLines.push(`<p><strong>${trimmedLine.substring(2, trimmedLine.length - 2)}</strong></p>`);
+          } else {
+            // Regular text
+            if (inList) {
+              htmlLines.push('</ul>');
+              inList = false;
+            }
+            htmlLines.push(`<p>${trimmedLine}</p>`);
           }
-          htmlLines.push(''); // Will become paragraph break
-        } else if (trimmedLine.startsWith('### ')) {
-          // H3 header
-          if (inList) {
-            htmlLines.push('</ul>');
-            inList = false;
-          }
-          htmlLines.push(`<h3>${trimmedLine.substring(4)}</h3>`);
-        } else if (trimmedLine.startsWith('## ')) {
-          // H2 header
-          if (inList) {
-            htmlLines.push('</ul>');
-            inList = false;
-          }
-          htmlLines.push(`<h2>${trimmedLine.substring(3)}</h2>`);
-        } else if (trimmedLine.startsWith('# ')) {
-          // H1 header
-          if (inList) {
-            htmlLines.push('</ul>');
-            inList = false;
-          }
-          htmlLines.push(`<h1>${trimmedLine.substring(2)}</h1>`);
-        } else if (trimmedLine.startsWith('• ')) {
-          // Bullet point
-          if (!inList) {
-            htmlLines.push('<ul>');
-            inList = true;
-          }
-          htmlLines.push(`<li>${trimmedLine.substring(2)}</li>`);
-        } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
-          // Bold text (likely section labels)
-          if (inList) {
-            htmlLines.push('</ul>');
-            inList = false;
-          }
-          htmlLines.push(`<p><strong>${trimmedLine.substring(2, trimmedLine.length - 2)}</strong></p>`);
-        } else {
-          // Regular text
-          if (inList) {
-            htmlLines.push('</ul>');
-            inList = false;
-          }
-          htmlLines.push(`<p>${trimmedLine}</p>`);
         }
-      }
+        
+        // Close any remaining open list
+        if (inList) {
+          htmlLines.push('</ul>');
+        }
+        
+        // Join lines and clean up
+        return htmlLines
+          .join('')
+          .replace(/<\/p><p>/g, '</p><p>')  // Ensure proper paragraph spacing
+          .replace(/><p><\/p></g, '>'); // Remove empty paragraphs between elements
+      };
       
-      // Close any remaining open list
-      if (inList) {
-        htmlLines.push('</ul>');
-      }
-      
-      // Join lines and clean up
-      return htmlLines
-        .join('')
-        .replace(/<\/p><p>/g, '</p><p>')  // Ensure proper paragraph spacing
-        .replace(/><p><\/p></g, '>'); // Remove empty paragraphs between elements
-    };
+      processedContent = convertMarkdownToHTML(generatedContent);
+      console.log('🤖 Converted markdown content to HTML');
+    }
     
-    const htmlContent = convertMarkdownToHTML(generatedContent);
-    console.log('🤖 Converted content to HTML:', htmlContent);
+    console.log('🤖 Final processed content:', processedContent);
     
-    // Insert the generated content at the end of the current content
-    const newContent = content + '<br><br>' + htmlContent;
+    // Insert the generated content with proper spacing
+    const newContent = content + (content ? '<br><br>' : '') + processedContent;
     updateContent(newContent);
   };
 
