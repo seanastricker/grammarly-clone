@@ -1,10 +1,10 @@
 {
-  "name": "wordwise-ai",
+  "name": "dungeons-and-drafting",
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "description": "AI-powered writing assistant with advanced grammar checking and intelligent suggestions",
-  "author": "WordWise AI Team",
+  "description": "AI-powered writing assistant specifically designed for Dungeons & Dragons Dungeon Masters",
+  "author": "Dungeons & Drafting Team",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -90,10 +90,12 @@
     "npm": ">=8.0.0"
   },
   "keywords": [
-    "ai",
-    "writing-assistant",
-    "grammar-checker",
-    "editor",
+    "d&d",
+    "dungeon-master",
+    "tabletop-rpg",
+    "campaign-generator",
+    "fantasy-names",
+    "ai-writing-assistant",
     "typescript",
     "react",
     "firebase"

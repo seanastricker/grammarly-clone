@@ -111,7 +111,7 @@ export const LoginPage: React.FC = () => {
           {/* Header */}
           <div className="text-center">
             <Link to="/" className="text-2xl font-bold text-foreground">
-              WordWise
+              Dungeons & Drafting
             </Link>
             <h2 className="mt-6 text-3xl font-bold text-foreground">
               Welcome back
@@ -295,8 +295,8 @@ export const LoginPage: React.FC = () => {
             Write with confidence
           </h3>
           <p className="text-muted-foreground leading-relaxed">
-            Join millions of users who trust WordWise to help them write clearly, 
-            effectively, and mistake-free.
+            Join thousands of Dungeon Masters who trust Dungeons & Drafting to help them 
+            create amazing D&D campaigns and adventures.
           </p>
         </div>
       </div>

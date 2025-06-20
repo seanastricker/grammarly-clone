@@ -65,7 +65,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'wordwise-theme',
+  storageKey = 'dungeons-drafting-theme',
   attribute = 'class',
   enableSystem = true,
   disableTransitionOnChange = false,

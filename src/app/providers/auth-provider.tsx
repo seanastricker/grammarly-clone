@@ -208,7 +208,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Create a temporary guest user profile
       const guestUser: UserProfile = {
         id: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        email: 'guest@wordwise.ai',
+        email: 'guest@dungeonsanddrafting.ai',
         displayName: 'Guest User',
         photoURL: null,
         userType: 'professional',

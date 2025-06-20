@@ -19,7 +19,7 @@ export type DocumentStatus = 'draft' | 'published' | 'archived';
 /**
  * Document type/category
  */
-export type DocumentType = 'article' | 'essay' | 'email' | 'letter' | 'report' | 'creative' | 'other';
+export type DocumentType = 'campaign' | 'names' | 'monsters' | 'backgrounds' | 'other';
 
 /**
  * Writing statistics for a document

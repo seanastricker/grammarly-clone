@@ -162,23 +162,23 @@ export const SignupPage: React.FC = () => {
             Start writing better today
           </h3>
           <p className="text-muted-foreground leading-relaxed">
-            Join millions of writers who use WordWise to communicate clearly, 
-            effectively, and with confidence.
+            Join thousands of Dungeon Masters who use Dungeons & Drafting to create 
+            amazing D&D campaigns and adventures.
           </p>
           
           {/* Features list */}
           <div className="mt-8 space-y-3">
             <div className="flex items-center text-sm text-muted-foreground">
               <CheckCircle className="w-4 h-4 text-primary mr-3" />
-              <span>Real-time grammar and spell checking</span>
+              <span>Campaign grammar and style analysis</span>
             </div>
             <div className="flex items-center text-sm text-muted-foreground">
               <CheckCircle className="w-4 h-4 text-primary mr-3" />
-              <span>AI-powered writing suggestions</span>
+              <span>AI-powered D&D content generation</span>
             </div>
             <div className="flex items-center text-sm text-muted-foreground">
               <CheckCircle className="w-4 h-4 text-primary mr-3" />
-              <span>Works everywhere you write</span>
+              <span>Fantasy name & character generators</span>
             </div>
           </div>
         </div>
@@ -190,7 +190,7 @@ export const SignupPage: React.FC = () => {
           {/* Header */}
           <div className="text-center">
             <Link to="/" className="text-2xl font-bold text-foreground">
-              WordWise
+              Dungeons & Drafting
             </Link>
             <h2 className="mt-6 text-3xl font-bold text-foreground">
               Create your account
@@ -371,7 +371,7 @@ export const SignupPage: React.FC = () => {
                   disabled={isLoading}
                 />
                 <span className="ml-3 text-sm text-muted-foreground">
-                  I agree to WordWise's{' '}
+                  I agree to Dungeons & Drafting's{' '}
                   <Link to="/terms" className="text-primary hover:text-primary/80">
                     Terms of Service
                   </Link>{' '}

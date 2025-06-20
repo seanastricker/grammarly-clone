@@ -45,7 +45,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="font-bold text-xl text-slate-900">
-            WordWise AI
+            Dungeons & Drafting
           </div>
           
           {/* Navigation menu */}
@@ -55,12 +55,6 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               className="text-slate-700 hover:text-slate-900 transition-colors font-medium"
             >
               Dashboard
-            </a>
-            <a 
-              href="/editor" 
-              className="text-slate-700 hover:text-slate-900 transition-colors font-medium"
-            >
-              Editor
             </a>
             <a 
               href="/settings" 

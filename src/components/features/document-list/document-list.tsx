@@ -17,8 +17,7 @@ import type {
   Document, 
   DocumentFilters, 
   DocumentSortOptions, 
-  DocumentType,
-  DocumentPrivacy
+  DocumentType
 } from '@/types/document';
 import * as documentService from '@/services/documents';
 
@@ -49,7 +48,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   // Filter and sort state
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<DocumentType | ''>('');
-  const [privacyFilter, setPrivacyFilter] = useState<DocumentPrivacy | ''>('');
   const [sortBy, setSortBy] = useState<DocumentSortOptions>({
     field: 'updatedAt',
     direction: 'desc'
@@ -71,7 +69,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     try {
       const filters: DocumentFilters = {};
       if (typeFilter) filters.type = typeFilter;
-      if (privacyFilter) filters.privacy = privacyFilter;
 
       const response = await documentService.getUserDocuments(user.id, {
         filters,
@@ -147,7 +144,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
    */
   useEffect(() => {
     loadDocuments();
-  }, [user, typeFilter, privacyFilter, sortBy]);
+  }, [user, typeFilter, sortBy]);
 
   /**
    * Handle document deletion
@@ -275,26 +272,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="">All Types</option>
-          <option value="article">Article</option>
-          <option value="essay">Essay</option>
-          <option value="email">Email</option>
-          <option value="letter">Letter</option>
-          <option value="report">Report</option>
-          <option value="creative">Creative</option>
+          <option value="campaign">Campaign</option>
+          <option value="names">Names</option>
+          <option value="monsters">Monsters</option>
+          <option value="backgrounds">Backgrounds</option>
           <option value="other">Other</option>
         </select>
 
-        {/* Privacy Filter */}
-        <select
-          value={privacyFilter}
-          onChange={(e) => setPrivacyFilter(e.target.value as DocumentPrivacy | '')}
-          className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="">All Privacy</option>
-          <option value="private">Private</option>
-          <option value="shared">Shared</option>
-          <option value="public">Public</option>
-        </select>
+
 
         {/* Sort */}
         <select

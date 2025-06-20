@@ -175,7 +175,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           <p className="text-body-small text-muted-foreground">
             If this problem persists, please{' '}
             <a
-              href="mailto:support@wordwise.ai"
+                              href="mailto:support@dungeonsanddrafting.ai"
               className="text-primary hover:text-primary/80 underline"
             >
               contact support

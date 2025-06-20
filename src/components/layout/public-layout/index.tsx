@@ -32,7 +32,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="font-bold text-xl text-emerald-600">
-            WordWise AI
+            Dungeons & Drafting
           </div>
           <nav className="flex items-center space-x-4">
             <a 
@@ -60,7 +60,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-gray-600">
-            <p>&copy; 2024 WordWise AI. All rights reserved.</p>
+            <p>&copy; 2024 Dungeons & Drafting. All rights reserved.</p>
           </div>
         </div>
       </footer>

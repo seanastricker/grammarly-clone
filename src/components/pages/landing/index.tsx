@@ -194,7 +194,7 @@ export const LandingPage: React.FC = () => {
                 textAlign: 'center'
               }}
             >
-              WordWise
+              Dungeons & Drafting
             </h1>
             <p 
               className="text-lg"
@@ -205,7 +205,7 @@ export const LandingPage: React.FC = () => {
                 textAlign: 'center'
               }}
             >
-              AI-powered writing assistant that helps you write better content.
+              AI-powered writing assistant for Dungeon Masters creating epic D&D adventures.
             </p>
           </div>
 

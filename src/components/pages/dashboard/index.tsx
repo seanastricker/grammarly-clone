@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, Clock, TrendingUp, Zap, Star, Calendar, Target, Activity } from 'lucide-react';
+import { Plus, FileText, Clock, TrendingUp, Zap, Calendar, Target } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { DocumentList, CreateDocumentModal } from '@/components/features/document-list';
 import type { RecentDocument } from '@/types/document';
@@ -212,26 +212,17 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Documents - Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+        {/* Main Content */}
+        <div className="w-full">
+          {/* Recent Documents */}
+          <div className="space-y-6">
             {recentDocuments.length > 0 && (
               <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-50 rounded-lg">
-                      <Clock className="w-5 h-5 text-slate-700" />
-                    </div>
-                    <h2 className="text-xl font-semibold text-slate-900">Recent Documents</h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-slate-50 rounded-lg">
+                    <Clock className="w-5 h-5 text-slate-700" />
                   </div>
-                  <button
-                    onClick={() => navigate('/editor')}
-                    className="text-sm text-slate-700 hover:text-slate-900 font-medium flex items-center gap-1"
-                  >
-                    View all
-                    <TrendingUp className="w-4 h-4" />
-                  </button>
+                  <h2 className="text-xl font-semibold text-slate-900">Recent Documents</h2>
                 </div>
                 
                 <div className="space-y-3">
@@ -270,74 +261,7 @@ export const DashboardPage: React.FC = () => {
             <DocumentList onCreateNew={handleCreateNew} />
           </div>
 
-          {/* Quick Actions & Insights - Right Column */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-slate-50 rounded-lg">
-                  <Star className="w-5 h-5 text-slate-700" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
-              </div>
-              
-              <div className="space-y-3">
-                <button
-                  onClick={handleCreateNew}
-                  className="w-full flex items-center gap-3 p-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 rounded-lg transition-all duration-200 text-left"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span className="font-medium">Create New Document</span>
-                </button>
-                
-                <button
-                  onClick={() => navigate('/editor')}
-                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all duration-200 text-left"
-                >
-                  <FileText className="w-5 h-5 text-slate-700" />
-                  <span className="font-medium text-slate-900">Browse All Documents</span>
-                </button>
-              </div>
-            </div>
 
-            {/* Writing Insights */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-slate-50 rounded-lg">
-                  <Activity className="w-5 h-5 text-slate-700" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900">Writing Insights</h3>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-900">Weekly Goal</span>
-                    <span className="text-sm text-slate-700 font-semibold">75%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div className="bg-slate-700 h-2 rounded-full" style={{ width: '75%' }}></div>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-2">3,750 / 5,000 words</p>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Avg. Quality Score</span>
-                    <span className="text-sm font-semibold text-slate-900">94%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Writing Streak</span>
-                    <span className="text-sm font-semibold text-slate-900">7 days</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Documents This Month</span>
-                    <span className="text-sm font-semibold text-slate-900">12</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

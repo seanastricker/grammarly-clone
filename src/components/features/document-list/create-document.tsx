@@ -33,45 +33,33 @@ const documentTypes: Array<{
   icon: string;
 }> = [
   {
-    type: 'article',
-    label: 'Article',
-    description: 'Blog posts, news articles, and informational content',
-    icon: '📰'
+    type: 'campaign',
+    label: 'Campaign',
+    description: 'Full campaign adventures with quests, NPCs, and storylines',
+    icon: '📚'
   },
   {
-    type: 'essay',
-    label: 'Essay',
-    description: 'Academic essays, opinion pieces, and formal writing',
-    icon: '📝'
+    type: 'names',
+    label: 'Names',
+    description: 'Character names for NPCs, places, and fantasy entities',
+    icon: '🏷️'
   },
   {
-    type: 'email',
-    label: 'Email',
-    description: 'Professional emails and correspondence',
-    icon: '📧'
+    type: 'monsters',
+    label: 'Monsters',
+    description: 'Monster stat blocks, descriptions, and encounter ideas',
+    icon: '🐉'
   },
   {
-    type: 'letter',
-    label: 'Letter',
-    description: 'Formal letters, cover letters, and personal correspondence',
-    icon: '✉️'
-  },
-  {
-    type: 'report',
-    label: 'Report',
-    description: 'Business reports, research papers, and analytics',
-    icon: '📊'
-  },
-  {
-    type: 'creative',
-    label: 'Creative Writing',
-    description: 'Stories, poetry, and creative content',
-    icon: '🎭'
+    type: 'backgrounds',
+    label: 'Backgrounds',
+    description: 'Character backgrounds, histories, and personality traits',
+    icon: '👤'
   },
   {
     type: 'other',
     label: 'Other',
-    description: 'General purpose document',
+    description: 'General D&D content and miscellaneous documents',
     icon: '📄'
   }
 ];
