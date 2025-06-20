@@ -51,32 +51,74 @@ export const DashboardPage: React.FC = () => {
     if (!user) return;
 
     try {
-      // Load recent documents
-      const recent = await documentService.getRecentDocuments(user.id, 5);
-      setRecentDocuments(recent);
+      // Load recent documents with error handling
+      let recent: RecentDocument[] = [];
+      try {
+        recent = await documentService.getRecentDocuments(user.id, 5);
+        setRecentDocuments(recent);
+      } catch (recentError) {
+        console.error('Error loading recent documents:', recentError);
+        setRecentDocuments([]);
+      }
 
-      // Load all documents for stats calculation
-      const allDocs = await documentService.getUserDocuments(user.id, {
-        limit: 1000 // Get all documents for accurate stats
-      });
+      // Load all documents for stats calculation with error handling
+      let allDocs: any = { documents: [] };
+      try {
+        allDocs = await documentService.getUserDocuments(user.id, {
+          limit: 1000 // Get all documents for accurate stats
+        });
+      } catch (docsError) {
+        console.error('Error loading user documents:', docsError);
+        allDocs = { documents: [] };
+      }
 
-      // Calculate statistics
-      const totalWords = allDocs.documents.reduce((sum, doc) => sum + doc.stats.wordCount, 0);
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const documentsThisWeek = allDocs.documents.filter(
-        doc => new Date(doc.createdAt) > weekAgo
-      ).length;
+      // Calculate statistics with safety checks
+      try {
+        const validDocuments = allDocs.documents.filter((doc: any) => 
+          doc && doc.stats && typeof doc.stats.wordCount === 'number'
+        );
+        
+        const totalWords = validDocuments.reduce((sum: number, doc: any) => 
+          sum + (doc.stats?.wordCount || 0), 0
+        );
+        
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const documentsThisWeek = validDocuments.filter((doc: any) => {
+          try {
+            const createdAt = doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt);
+            return createdAt > weekAgo;
+          } catch {
+            return false;
+          }
+        }).length;
 
-      setStats({
-        totalDocuments: allDocs.documents.length,
-        totalWords,
-        documentsThisWeek,
-        avgWordsPerDocument: allDocs.documents.length > 0 
-          ? Math.round(totalWords / allDocs.documents.length) 
-          : 0
-      });
+        setStats({
+          totalDocuments: validDocuments.length,
+          totalWords,
+          documentsThisWeek,
+          avgWordsPerDocument: validDocuments.length > 0 
+            ? Math.round(totalWords / validDocuments.length) 
+            : 0
+        });
+      } catch (statsError) {
+        console.error('Error calculating stats:', statsError);
+        setStats({
+          totalDocuments: 0,
+          totalWords: 0,
+          documentsThisWeek: 0,
+          avgWordsPerDocument: 0
+        });
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Set safe defaults
+      setRecentDocuments([]);
+      setStats({
+        totalDocuments: 0,
+        totalWords: 0,
+        documentsThisWeek: 0,
+        avgWordsPerDocument: 0
+      });
     }
   };
 

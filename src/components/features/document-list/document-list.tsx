@@ -89,7 +89,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
    * Filter and sort documents client-side
    */
   const filteredDocuments = React.useMemo(() => {
-    let filtered = [...allDocuments];
+    // First filter out any invalid documents
+    let filtered = allDocuments.filter(doc => 
+      doc && 
+      doc.id && 
+      doc.title && 
+      doc.stats && 
+      typeof doc.stats.wordCount === 'number'
+    );
 
     // Client-side search filtering
     if (searchQuery.trim()) {

@@ -39,12 +39,10 @@ interface DocumentCardProps {
  * Document type icons mapping
  */
 const documentTypeIcons: Record<DocumentType, typeof FileText> = {
-  article: FileText,
-  essay: FileText,
-  email: FileText,
-  letter: FileText,
-  report: FileText,
-  creative: FileText,
+  campaign: FileText,
+  names: FileText,
+  monsters: FileText,
+  backgrounds: FileText,
   other: FileText
 };
 
@@ -52,12 +50,10 @@ const documentTypeIcons: Record<DocumentType, typeof FileText> = {
  * Document type colors - Updated to elegant, muted palette
  */
 const documentTypeColors: Record<DocumentType, string> = {
-  article: 'text-slate-700 bg-slate-50 border-slate-200/50',
-  essay: 'text-slate-700 bg-slate-50 border-slate-200/50',
-  email: 'text-blue-700 bg-blue-50 border-blue-200/50',
-  letter: 'text-slate-700 bg-slate-50 border-slate-200/50',
-  report: 'text-slate-700 bg-slate-50 border-slate-200/50',
-  creative: 'text-slate-700 bg-slate-50 border-slate-200/50',
+  campaign: 'text-purple-700 bg-purple-50 border-purple-200/50',
+  names: 'text-green-700 bg-green-50 border-green-200/50',
+  monsters: 'text-red-700 bg-red-50 border-red-200/50',
+  backgrounds: 'text-indigo-700 bg-indigo-50 border-indigo-200/50',
   other: 'text-slate-600 bg-slate-50 border-slate-200/50'
 };
 
@@ -98,8 +94,16 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   const [showActions, setShowActions] = useState(false);
   const navigate = useNavigate();
 
-  const Icon = documentTypeIcons[document.type];
-  const typeColorClass = documentTypeColors[document.type];
+  // Safely handle document type with fallback
+  const safeDocumentType = (document.type as DocumentType) || 'other';
+  const Icon = documentTypeIcons[safeDocumentType] || documentTypeIcons.other;
+  const typeColorClass = documentTypeColors[safeDocumentType] || documentTypeColors.other;
+
+  // Validate document structure
+  if (!document || !document.id || !document.title) {
+    console.warn('Invalid document structure:', document);
+    return null;
+  }
 
   /**
    * Handle card click - navigate to editor
@@ -143,7 +147,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 'text-xs px-2 py-1 rounded-full border',
                 typeColorClass
               )}>
-                {document.type}
+                {safeDocumentType}
               </span>
               <span className="text-xs text-slate-600">
                 {document.privacy}

@@ -264,7 +264,7 @@ Also provide an overall quality score (0-100).`;
 export async function generateWritingSuggestions(
   text: string,
   userProfile: UserProfile,
-  context: 'email' | 'document' | 'essay' | 'report' | 'creative' = 'document'
+  context: 'document' | 'campaign' | 'names' | 'monsters' | 'backgrounds' = 'document'
 ): Promise<WritingSuggestion[]> {
   if (!text.trim()) return [];
 
@@ -348,16 +348,16 @@ export async function generateWritingSuggestions(
     });
   }
 
-  if (context === 'email') {
+  if (context === 'campaign') {
     mockSuggestions.push({
-      id: 'email-1',
+      id: 'campaign-1',
       type: 'tone',
-      title: 'Email Tone Optimization',
-      description: 'Optimize for professional email communication',
+      title: 'Campaign Narrative Enhancement',
+      description: 'Optimize for engaging D&D campaign storytelling',
       originalText: text.substring(0, 30),
-      suggestedText: 'Consider adding a clear call-to-action at the end.',
+      suggestedText: 'Consider adding vivid descriptions to immerse your players.',
       confidence: 0.75,
-      reasoning: 'Professional emails benefit from clear next steps.',
+      reasoning: 'D&D campaigns benefit from immersive storytelling and clear scene-setting.',
     });
   }
 
@@ -603,11 +603,11 @@ function generateSystemPrompt(userProfile: UserProfile, context: string): string
   };
 
   const contextPrompts: Record<string, string> = {
-    email: 'This is email communication - focus on clarity, professionalism, and clear action items.',
     document: 'This is a formal document - ensure proper structure and comprehensive coverage.',
-    essay: 'This is academic writing - focus on argument structure and evidence.',
-    report: 'This is a business report - emphasize data-driven insights and recommendations.',
-    creative: 'This is creative writing - focus on narrative, voice, and engagement.'
+    campaign: 'This is D&D campaign content - focus on immersive storytelling, clear scene descriptions, and engaging narrative.',
+    names: 'This is fantasy name generation - focus on authenticity, cultural consistency, and memorability.',
+    monsters: 'This is D&D monster content - focus on creative descriptions, thematic consistency, and mechanical balance.',
+    backgrounds: 'This is character background content - focus on rich personal history, clear motivations, and plot hooks.'
   };
 
   return `${basePrompt} ${userSpecificPrompts[userProfile.userType] || userSpecificPrompts.professional} ${contextPrompts[context] || contextPrompts.document}`;

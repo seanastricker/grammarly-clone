@@ -156,4 +156,53 @@ export function extractPlainTextFromHTML(htmlContent: string): string {
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')              // Normalize whitespace
     .trim();
+}
+
+/**
+ * Clear potentially problematic localStorage data
+ * This helps resolve issues when document types or user preferences have changed
+ */
+export function clearLegacyData(): void {
+  try {
+    // Clear any cached documents that might have old types
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.includes('document_') ||
+        key.includes('userPreferences') ||
+        key.includes('documentTypes') ||
+        key.includes('recentDocuments') ||
+        key.includes('wordwise') ||
+        key.includes('grammarly-clone')
+      )) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+      console.log('🧹 Cleared legacy data:', key);
+    });
+    
+    if (keysToRemove.length > 0) {
+      console.log('🧹 Cleared', keysToRemove.length, 'legacy localStorage items');
+    }
+  } catch (error) {
+    console.error('Error clearing legacy data:', error);
+  }
+}
+
+/**
+ * Check if we need to clear legacy data based on app version
+ */
+export function checkAndClearLegacyData(): void {
+  const currentVersion = '2.0.0'; // Dungeons & Drafting version
+  const storedVersion = localStorage.getItem('app_version');
+  
+  if (!storedVersion || storedVersion !== currentVersion) {
+    console.log('🔄 Version change detected, clearing legacy data...');
+    clearLegacyData();
+    localStorage.setItem('app_version', currentVersion);
+  }
 } 

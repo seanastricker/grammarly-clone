@@ -17,6 +17,20 @@ import { Providers } from './app/providers';
 import { ErrorFallback } from '@/components/atoms/error-fallback';
 
 import './app/globals.css';
+import { checkAndClearLegacyData } from '@/lib/utils';
+
+// Clear any legacy data that might cause runtime errors
+try {
+  checkAndClearLegacyData();
+  // Also clear any cached React components or state
+  if (typeof window !== 'undefined') {
+    // Clear any cached data that might have old document types
+    sessionStorage.clear();
+    console.log('🧹 Cleared sessionStorage for fresh start');
+  }
+} catch (error) {
+  console.error('Error during data cleanup:', error);
+}
 
 /**
  * Global error handler for unhandled errors
