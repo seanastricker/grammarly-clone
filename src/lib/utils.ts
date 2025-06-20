@@ -205,4 +205,165 @@ export function checkAndClearLegacyData(): void {
     clearLegacyData();
     localStorage.setItem('app_version', currentVersion);
   }
+}
+
+/**
+ * Apply text changes to HTML content while preserving formatting
+ * This function maps plain text positions to HTML positions and applies changes within the HTML structure
+ * 
+ * @param htmlContent - Original HTML content
+ * @param plainTextStart - Start position in plain text
+ * @param plainTextEnd - End position in plain text
+ * @param replacement - Text to replace with
+ * @returns Updated HTML content with formatting preserved
+ */
+export function applyTextChangeToHTML(
+  htmlContent: string, 
+  plainTextStart: number, 
+  plainTextEnd: number, 
+  replacement: string
+): string {
+  // Build a mapping of plain text positions to HTML positions
+  const positionMap: { plainPos: number; htmlPos: number; inTag: boolean }[] = [];
+  let plainPos = 0;
+  let htmlPos = 0;
+  let inTag = false;
+  
+  for (let i = 0; i < htmlContent.length; i++) {
+    const char = htmlContent[i];
+    
+    if (char === '<') {
+      inTag = true;
+    } else if (char === '>') {
+      inTag = false;
+      htmlPos = i + 1;
+      continue;
+    }
+    
+    if (!inTag) {
+      // Handle HTML entities
+      if (char === '&') {
+        const entityEnd = htmlContent.indexOf(';', i);
+        if (entityEnd !== -1) {
+          const entity = htmlContent.substring(i, entityEnd + 1);
+          let decodedChar = ' ';
+          
+          switch (entity) {
+            case '&nbsp;': decodedChar = ' '; break;
+            case '&amp;': decodedChar = '&'; break;
+            case '&lt;': decodedChar = '<'; break;
+            case '&gt;': decodedChar = '>'; break;
+            case '&quot;': decodedChar = '"'; break;
+            case '&#39;': decodedChar = "'"; break;
+            default: decodedChar = ' '; break;
+          }
+          
+          positionMap.push({ plainPos, htmlPos: i, inTag: false });
+          plainPos++;
+          htmlPos = entityEnd + 1;
+          i = entityEnd;
+          continue;
+        }
+      }
+      
+      // Map this character position
+      positionMap.push({ plainPos, htmlPos: i, inTag: false });
+      
+      // Normalize whitespace in position mapping
+      if (/\s/.test(char)) {
+        // Only increment plain position once for consecutive whitespace
+        if (plainPos === 0 || !positionMap[positionMap.length - 2] || 
+            positionMap[positionMap.length - 2].plainPos < plainPos) {
+          plainPos++;
+        }
+      } else {
+        plainPos++;
+      }
+    }
+    
+    htmlPos = i + 1;
+  }
+  
+  // Add final position
+  positionMap.push({ plainPos, htmlPos: htmlContent.length, inTag: false });
+  
+  // Find HTML positions for the plain text range
+  const startMapping = positionMap.find(m => m.plainPos >= plainTextStart);
+  const endMapping = positionMap.find(m => m.plainPos >= plainTextEnd);
+  
+  if (!startMapping || !endMapping) {
+    console.warn('Could not map plain text positions to HTML positions');
+    return htmlContent;
+  }
+  
+  const htmlStart = startMapping.htmlPos;
+  const htmlEnd = endMapping.htmlPos;
+  
+  // Apply the replacement in HTML
+  const before = htmlContent.substring(0, htmlStart);
+  const after = htmlContent.substring(htmlEnd);
+  
+  return before + replacement + after;
+}
+
+/**
+ * Apply multiple text changes to HTML content efficiently
+ * Changes should be sorted by position (right to left) to avoid position shifts
+ * 
+ * @param htmlContent - Original HTML content
+ * @param changes - Array of changes to apply, sorted by position descending
+ * @returns Updated HTML content with all changes applied
+ */
+export function applyMultipleTextChangesToHTML(
+  htmlContent: string,
+  changes: Array<{
+    plainTextStart: number;
+    plainTextEnd: number;
+    replacement: string;
+    originalText?: string;
+  }>
+): { updatedHTML: string; appliedCount: number; failedCount: number } {
+  let currentHTML = htmlContent;
+  let appliedCount = 0;
+  let failedCount = 0;
+  
+  // Sort changes by position (right to left) to avoid position shifts
+  const sortedChanges = [...changes].sort((a, b) => b.plainTextStart - a.plainTextStart);
+  
+  for (const change of sortedChanges) {
+    try {
+      // Verify the original text exists if provided
+      if (change.originalText) {
+        const currentPlainText = extractPlainTextFromHTML(currentHTML);
+        if (!currentPlainText.includes(change.originalText)) {
+          console.warn('Original text not found for change:', change.originalText);
+          failedCount++;
+          continue;
+        }
+      }
+      
+      const beforeChange = currentHTML;
+      currentHTML = applyTextChangeToHTML(
+        currentHTML,
+        change.plainTextStart,
+        change.plainTextEnd,
+        change.replacement
+      );
+      
+      if (currentHTML !== beforeChange) {
+        appliedCount++;
+      } else {
+        failedCount++;
+      }
+    } catch (error) {
+      console.error('Error applying change:', error, change);
+      failedCount++;
+    }
+  }
+  
+  return {
+    updatedHTML: currentHTML,
+    appliedCount,
+    failedCount
+  };
 } 

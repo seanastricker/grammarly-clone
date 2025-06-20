@@ -17,7 +17,7 @@ import { UnifiedAIAssistant } from '@/components/features/editor/unified-ai-assi
 import type { AnalyzedError } from '@/services/ai/language-tool';
 import type { WritingSuggestion } from '@/services/ai/openai-service';
 import type { AIGrammarError } from '@/services/ai/grammar-ai-service';
-import { cn, extractPlainTextFromHTML } from '@/lib/utils';
+import { cn, extractPlainTextFromHTML, applyTextChangeToHTML, applyMultipleTextChangesToHTML } from '@/lib/utils';
 
 // Type for grammar error suggestions
 interface AIGrammarSuggestion extends WritingSuggestion {
@@ -92,8 +92,7 @@ export const EditorPage: React.FC = () => {
     }
 
     try {
-      // CONSISTENT PLAIN TEXT EXTRACTION
-      // Use the same method as grammar analysis to ensure consistency
+      // Get plain text for position verification
       const currentPlainText = extractPlainTextFromHTML(content);
       
       // Extract the original fragment that needs to be replaced from the error context
@@ -106,44 +105,13 @@ export const EditorPage: React.FC = () => {
         errorId,
         originalFragment,
         suggestion,
-        currentTextLength: currentPlainText.length,
-        fragmentFound: currentPlainText.includes(originalFragment),
-        currentTextPreview: currentPlainText.substring(0, 100) + '...'
+        errorPosition: error.position,
+        fragmentFound: currentPlainText.includes(originalFragment)
       });
 
       // Check if the original fragment still exists in the current text
       if (!currentPlainText.includes(originalFragment)) {
-        console.warn('🔧 INDIVIDUAL APPLY - Original fragment not found in current text:', {
-          originalFragment,
-          currentTextPreview: currentPlainText.substring(0, 200) + '...',
-          searchAttempts: [
-            { method: 'exact', found: currentPlainText.includes(originalFragment) },
-            { method: 'trimmed', found: currentPlainText.includes(originalFragment.trim()) },
-            { method: 'normalized', found: currentPlainText.replace(/\s+/g, ' ').includes(originalFragment.replace(/\s+/g, ' ')) }
-          ]
-        });
-        
-        // Try alternative search methods
-        let searchFragment = originalFragment.trim();
-        if (currentPlainText.includes(searchFragment)) {
-          console.log('🔧 INDIVIDUAL APPLY - Found fragment using trimmed search');
-          // Update the fragment to use for replacement
-          const fragmentIndex = currentPlainText.indexOf(searchFragment);
-          
-          // Apply capitalization preservation if needed
-          let finalSuggestion = suggestion;
-          if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, searchFragment)) {
-            finalSuggestion = capitalizeFirstLetter(suggestion);
-          }
-
-          const updatedText = currentPlainText.replace(searchFragment, finalSuggestion);
-          updateContent(updatedText);
-          dismissError(errorId);
-          console.log('🔧 INDIVIDUAL APPLY - Successfully applied suggestion using trimmed search');
-          return;
-        }
-        
-        // Still dismiss the error to prevent UI confusion
+        console.warn('🔧 INDIVIDUAL APPLY - Original fragment not found, dismissing error');
         dismissError(errorId);
         return;
       }
@@ -160,32 +128,37 @@ export const EditorPage: React.FC = () => {
         });
       }
 
-      // Use simple string replacement - replace first occurrence only
-      const updatedText = currentPlainText.replace(originalFragment, finalSuggestion);
+      // Apply change to HTML content while preserving formatting
+      const updatedHTML = applyTextChangeToHTML(
+        content,
+        error.position.start,
+        error.position.end,
+        finalSuggestion
+      );
       
-      console.log('🔧 INDIVIDUAL APPLY - Replacement result:', {
-        originalLength: currentPlainText.length,
-        newLength: updatedText.length,
-        replacementMade: updatedText !== currentPlainText,
+      console.log('🔧 INDIVIDUAL APPLY - HTML-aware replacement result:', {
+        originalHTMLLength: content.length,
+        newHTMLLength: updatedHTML.length,
+        replacementMade: updatedHTML !== content,
         changePreview: {
           before: originalFragment,
           after: finalSuggestion
         }
       });
 
-      if (updatedText === currentPlainText) {
-        console.warn('🔧 INDIVIDUAL APPLY - No changes were made to the text');
+      if (updatedHTML === content) {
+        console.warn('🔧 INDIVIDUAL APPLY - No changes were made to the HTML content');
         dismissError(errorId);
         return;
       }
 
-      // Update the content with plain text
-      updateContent(updatedText);
+      // Update the content with formatted HTML (preserves formatting!)
+      updateContent(updatedHTML);
 
       // Dismiss the error after successful replacement
       dismissError(errorId);
 
-      console.log('🔧 INDIVIDUAL APPLY - Successfully applied suggestion');
+      console.log('🔧 INDIVIDUAL APPLY - Successfully applied suggestion with formatting preserved');
       
     } catch (err) {
       console.error('🔧 INDIVIDUAL APPLY - Error applying suggestion:', err);
@@ -266,142 +239,90 @@ export const EditorPage: React.FC = () => {
     }
 
     try {
-      // CONSISTENT PLAIN TEXT EXTRACTION
-      // Use the same method as grammar analysis to ensure consistency
-      let currentPlainText = extractPlainTextFromHTML(content);
+      // Get plain text for verification but work with HTML for actual changes
+      const currentPlainText = extractPlainTextFromHTML(content);
 
-      console.log('🔧 ACCEPT ALL - Starting with plain text:', {
-        originalLength: content.length,
+      console.log('🔧 ACCEPT ALL - Starting with content:', {
+        originalHTMLLength: content.length,
         plainTextLength: currentPlainText.length,
-        plainTextPreview: currentPlainText.substring(0, 100) + '...'
+        errorsToProcess: errorsToApply.length
       });
 
-      // Apply all suggestions in sequence
-      // We need to work from end to beginning to avoid position shifts
-      const sortedErrors = [...errorsToApply].sort((a, b) => {
-        // Sort by position (descending) to apply from end to beginning
-        return (b.position?.start || 0) - (a.position?.start || 0);
-      });
-
-      console.log('🔧 ACCEPT ALL - Applying suggestions in order:', sortedErrors.map(e => ({
-        id: e.id,
-        type: e.type,
-        position: e.position,
-        suggestions: e.suggestions.length
-      })));
-
-      let appliedCount = 0;
-      let skippedCount = 0;
-
-      // Apply each suggestion to the running content
-      for (const error of sortedErrors) {
-        if (error.suggestions.length === 0) {
-          console.log('🔧 ACCEPT ALL - Skipping error with no suggestions:', error.id);
-          skippedCount++;
-          continue;
-        }
-
-        const suggestion = error.suggestions[0]; // Use first suggestion
-        
-        // Extract the original fragment that needs to be replaced
-        const originalFragment = error.context.text.substring(
-          error.context.highlightStart,
-          error.context.highlightEnd
-        );
-
-        console.log('🔧 ACCEPT ALL - Processing error:', {
-          id: error.id,
-          originalFragment,
-          suggestion,
-          currentTextLength: currentPlainText.length,
-          fragmentFound: currentPlainText.includes(originalFragment)
-        });
-
-        // Check if the original fragment still exists in the current text
-        if (currentPlainText.includes(originalFragment)) {
+      // Prepare changes for batch application to HTML
+      const changes = errorsToApply
+        .filter(error => {
+          // Extract the original fragment that needs to be replaced
+          const originalFragment = error.context.text.substring(
+            error.context.highlightStart,
+            error.context.highlightEnd
+          );
+          
+          // Verify the fragment still exists
+          const fragmentExists = currentPlainText.includes(originalFragment);
+          if (!fragmentExists) {
+            console.warn('🔧 ACCEPT ALL - Fragment not found for error:', error.id, originalFragment);
+          }
+          
+          return fragmentExists && error.position && error.suggestions.length > 0;
+        })
+        .map(error => {
+          const originalFragment = error.context.text.substring(
+            error.context.highlightStart,
+            error.context.highlightEnd
+          );
+          
+          let suggestion = error.suggestions[0];
+          
           // Apply capitalization preservation if needed
-          let finalSuggestion = suggestion;
           const fragmentIndex = currentPlainText.indexOf(originalFragment);
           if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, originalFragment)) {
-            finalSuggestion = capitalizeFirstLetter(suggestion);
+            suggestion = capitalizeFirstLetter(suggestion);
           }
-
-          // Replace in the plain text
-          const beforeReplacement = currentPlainText;
-          currentPlainText = currentPlainText.replace(originalFragment, finalSuggestion);
           
-          if (currentPlainText !== beforeReplacement) {
-            appliedCount++;
-            console.log('🔧 ACCEPT ALL - Applied suggestion:', {
-              id: error.id,
-              originalFragment,
-              finalSuggestion,
-              appliedCount,
-              lengthChange: currentPlainText.length - beforeReplacement.length
-            });
-          } else {
-            console.warn('🔧 ACCEPT ALL - Replacement made no changes:', error.id);
-            skippedCount++;
-          }
-        } else {
-          // Try alternative search methods
-          const trimmedFragment = originalFragment.trim();
-          if (currentPlainText.includes(trimmedFragment)) {
-            console.log('🔧 ACCEPT ALL - Found fragment using trimmed search:', error.id);
-            
-            let finalSuggestion = suggestion;
-            const fragmentIndex = currentPlainText.indexOf(trimmedFragment);
-            if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, trimmedFragment)) {
-              finalSuggestion = capitalizeFirstLetter(suggestion);
-            }
+          return {
+            plainTextStart: error.position.start,
+            plainTextEnd: error.position.end,
+            replacement: suggestion,
+            originalText: originalFragment,
+            errorId: error.id
+          };
+        });
 
-            const beforeReplacement = currentPlainText;
-            currentPlainText = currentPlainText.replace(trimmedFragment, finalSuggestion);
-            
-            if (currentPlainText !== beforeReplacement) {
-              appliedCount++;
-              console.log('🔧 ACCEPT ALL - Applied suggestion using trimmed search:', error.id);
-            } else {
-              skippedCount++;
-            }
-          } else {
-            console.warn('🔧 ACCEPT ALL - Fragment not found, skipping:', {
-              id: error.id,
-              originalFragment,
-              trimmedFragment,
-              currentTextPreview: currentPlainText.substring(0, 100) + '...'
-            });
-            skippedCount++;
-          }
-        }
-      }
+      console.log('🔧 ACCEPT ALL - Prepared changes:', changes.length);
 
-      console.log('🔧 ACCEPT ALL - Bulk application complete:', {
-        totalErrors: errorsToApply.length,
-        appliedCount,
-        skippedCount,
-        originalLength: content.length,
-        newLength: currentPlainText.length,
-        textChanged: currentPlainText !== extractPlainTextFromHTML(content)
+      // Apply all changes to HTML while preserving formatting
+      const result = applyMultipleTextChangesToHTML(content, changes);
+      
+      console.log('🔧 ACCEPT ALL - Bulk application result:', {
+        appliedCount: result.appliedCount,
+        failedCount: result.failedCount,
+        totalAttempted: changes.length,
+        contentChanged: result.updatedHTML !== content
       });
 
-      if (appliedCount > 0) {
-        // Update the content with all changes
-        updateContent(currentPlainText);
+      if (result.appliedCount > 0) {
+        // Update the content with formatted HTML (preserves all formatting!)
+        updateContent(result.updatedHTML);
         
-        // Clear all errors after successful application
-        clearErrors();
+        // Clear all processed errors
+        errorsToApply.forEach(error => {
+          dismissError(error.id);
+        });
         
-        console.log('🔧 ACCEPT ALL - Successfully applied', appliedCount, 'suggestions');
+        console.log('🔧 ACCEPT ALL - Successfully applied', result.appliedCount, 'suggestions with formatting preserved');
       } else {
-        console.log('🔧 ACCEPT ALL - No suggestions were applied, clearing errors anyway to prevent UI confusion');
+        console.log('🔧 ACCEPT ALL - No suggestions were applied, clearing errors to prevent UI confusion');
         // Clear errors even if no suggestions were applied to prevent UI confusion
-        clearErrors();
+        errorsToApply.forEach(error => {
+          dismissError(error.id);
+        });
       }
     } catch (err) {
       console.error('🔧 ACCEPT ALL - Error during bulk application:', err);
       // Clear errors to prevent UI confusion even if there was an error
-      clearErrors();
+      errorsToApply.forEach(error => {
+        dismissError(error.id);
+      });
     }
   };
 
