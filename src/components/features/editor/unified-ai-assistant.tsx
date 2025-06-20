@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { extractPlainTextFromHTML } from '@/lib/utils';
 import { CampaignGeneratorWidget } from './campaign-generator-widget';
+import FantasyNameGeneratorWidget from './fantasy-name-generator-widget';
 
 interface UnifiedAIAssistantProps {
   content: string;
@@ -34,7 +35,7 @@ export function UnifiedAIAssistant({
   className = ''
 }: UnifiedAIAssistantProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis' | 'campaign'>('errors');
+  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis' | 'campaign' | 'fantasy-names'>('errors');
   
   // AI Grammar Analysis
   const {
@@ -357,6 +358,16 @@ export function UnifiedAIAssistant({
             >
               Campaign
             </button>
+            <button
+              onClick={() => setActiveTab('fantasy-names')}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'fantasy-names'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Names
+            </button>
           </div>
         </div>
       </div>
@@ -640,6 +651,13 @@ export function UnifiedAIAssistant({
           <CampaignGeneratorWidget
             onCampaignGenerated={onInsertContent}
             className="h-full"
+          />
+        )}
+
+        {/* Fantasy Name Generator Tab */}
+        {activeTab === 'fantasy-names' && (
+          <FantasyNameGeneratorWidget
+            onInsert={onInsertContent}
           />
         )}
       </div>

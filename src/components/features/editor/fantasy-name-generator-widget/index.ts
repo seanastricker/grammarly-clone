@@ -1,0 +1,1 @@
+export { default as FantasyNameGeneratorWidget } from '../fantasy-name-generator-widget'; 
