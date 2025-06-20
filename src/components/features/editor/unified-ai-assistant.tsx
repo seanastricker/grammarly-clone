@@ -13,6 +13,7 @@ import { extractPlainTextFromHTML } from '@/lib/utils';
 import { CampaignGeneratorWidget } from './campaign-generator-widget';
 import FantasyNameGeneratorWidget from './fantasy-name-generator-widget';
 import { MonsterReSkinWidget } from './monster-reskin-widget';
+import CharacterBackgroundGeneratorWidget from './character-background-generator-widget';
 
 interface UnifiedAIAssistantProps {
   content: string;
@@ -36,7 +37,7 @@ export function UnifiedAIAssistant({
   className = ''
 }: UnifiedAIAssistantProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis' | 'campaign' | 'fantasy-names' | 'monster-reskin'>('errors');
+  const [activeTab, setActiveTab] = useState<'errors' | 'suggestions' | 'generate' | 'analysis' | 'campaign' | 'fantasy-names' | 'monster-reskin' | 'backgrounds'>('errors');
   
   // AI Grammar Analysis
   const {
@@ -379,6 +380,16 @@ export function UnifiedAIAssistant({
             >
               Monsters
             </button>
+            <button
+              onClick={() => setActiveTab('backgrounds')}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'backgrounds'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Backgrounds
+            </button>
           </div>
         </div>
       </div>
@@ -677,6 +688,13 @@ export function UnifiedAIAssistant({
           <MonsterReSkinWidget
             onInsertContent={onInsertContent}
             onClose={() => setActiveTab('errors')}
+          />
+        )}
+
+        {/* Character Background Generator Tab */}
+        {activeTab === 'backgrounds' && (
+          <CharacterBackgroundGeneratorWidget
+            onInsert={onInsertContent}
           />
         )}
       </div>
