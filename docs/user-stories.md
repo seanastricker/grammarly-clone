@@ -106,12 +106,12 @@ These user stories should be implemented **in sequential order**, with each stor
 **So that** I can keep my players engaged throughout the session.
 
 ### Acceptance Criteria
-- [ ] AI can analyze existing campaign content for combat vs. roleplay ratio
-- [ ] AI provides recommendations for improving engagement balance
-- [ ] Analysis considers pacing and player engagement factors
-- [ ] Suggestions include specific areas where balance could be improved
-- [ ] AI understands different player types and engagement preferences
-- [ ] Recommendations are actionable and specific to the campaign content
+- [X] AI can analyze existing campaign content for combat vs. roleplay ratio
+- [X] AI provides recommendations for improving engagement balance
+- [X] Analysis considers pacing and player engagement factors
+- [X] Suggestions include specific areas where balance could be improved
+- [X] AI understands different player types and engagement preferences
+- [X] Recommendations are actionable and specific to the campaign content
 
 ### Technical Requirements
 - Content analysis algorithms for identifying combat vs. roleplay sections

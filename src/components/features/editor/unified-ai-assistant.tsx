@@ -14,6 +14,7 @@ import { CampaignGeneratorWidget } from './campaign-generator-widget';
 import FantasyNameGeneratorWidget from './fantasy-name-generator-widget';
 import { MonsterReSkinWidget } from './monster-reskin-widget';
 import CharacterBackgroundGeneratorWidget from './character-background-generator-widget';
+import { BalanceAnalysisWidget } from './balance-analysis-widget';
 
 interface UnifiedAIAssistantProps {
   content: string;
@@ -37,7 +38,7 @@ export function UnifiedAIAssistant({
   className = ''
 }: UnifiedAIAssistantProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'errors' | 'campaign' | 'fantasy-names' | 'monster-reskin' | 'backgrounds'>('errors');
+  const [activeTab, setActiveTab] = useState<'errors' | 'campaign' | 'fantasy-names' | 'monster-reskin' | 'backgrounds' | 'analyze-campaign'>('errors');
   
   // AI Grammar Analysis
   const {
@@ -303,6 +304,16 @@ export function UnifiedAIAssistant({
             >
               Backgrounds
             </button>
+            <button
+              onClick={() => setActiveTab('analyze-campaign')}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'analyze-campaign'
+                  ? 'border-teal-500 text-teal-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Analyze Campaign
+            </button>
           </div>
         </div>
       </div>
@@ -439,6 +450,15 @@ export function UnifiedAIAssistant({
         {activeTab === 'backgrounds' && (
           <CharacterBackgroundGeneratorWidget
             onInsert={onInsertContent}
+          />
+        )}
+
+        {/* Campaign Balance Analysis Tab */}
+        {activeTab === 'analyze-campaign' && (
+          <BalanceAnalysisWidget
+            content={content}
+            onInsertContent={onInsertContent}
+            className="h-full"
           />
         )}
       </div>
