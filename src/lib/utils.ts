@@ -159,6 +159,84 @@ export function extractPlainTextFromHTML(htmlContent: string): string {
 }
 
 /**
+ * Converts HTML content to formatted text preserving structure
+ * Used for document exports to maintain readability
+ * 
+ * @param htmlContent - HTML content to convert
+ * @returns Formatted text with preserved structure
+ */
+export function convertHTMLToFormattedText(htmlContent: string): string {
+  let text = htmlContent;
+  
+  // Handle headers (h1-h6) - Convert to uppercase with spacing
+  text = text.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n\n$1\n' + '='.repeat(60) + '\n');
+  text = text.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n\n$1\n' + '-'.repeat(40) + '\n');
+  text = text.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n\n$1\n' + '-'.repeat(20) + '\n');
+  text = text.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n\n$1:\n');
+  text = text.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n\n$1:\n');
+  text = text.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '\n\n$1:\n');
+  
+  // Handle paragraphs - Add proper spacing
+  text = text.replace(/<p[^>]*>(.*?)<\/p>/gi, '\n\n$1');
+  
+  // Handle line breaks
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  
+  // Handle ordered lists first - need to process them separately to maintain proper numbering
+  text = text.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, listContent) => {
+    let counter = 1;
+    const processedList = listContent.replace(/<li[^>]*>(.*?)<\/li>/gi, (liMatch: string, liContent: string) => {
+      return `${counter++}. ${liContent}\n`;
+    });
+    return '\n' + processedList + '\n';
+  });
+  
+  // Handle unordered lists (after ordered lists to avoid conflicts)
+  text = text.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, listContent) => {
+    const processedList = listContent.replace(/<li[^>]*>(.*?)<\/li>/gi, (liMatch: string, liContent: string) => {
+      return `• ${liContent}\n`;
+    });
+    return '\n' + processedList + '\n';
+  });
+  
+  // Handle blockquotes
+  text = text.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gi, '\n> $1\n');
+  
+  // Handle emphasis and strong text
+  text = text.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
+  text = text.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
+  text = text.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
+  text = text.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
+  text = text.replace(/<u[^>]*>(.*?)<\/u>/gi, '_$1_');
+  
+  // Handle code
+  text = text.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`');
+  text = text.replace(/<pre[^>]*>(.*?)<\/pre>/gi, '\n```\n$1\n```\n');
+  
+  // Handle horizontal rules
+  text = text.replace(/<hr\s*\/?>/gi, '\n' + '-'.repeat(60) + '\n');
+  
+  // Remove remaining HTML tags
+  text = text.replace(/<[^>]*>/g, '');
+  
+  // Decode HTML entities
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  
+  // Clean up excessive whitespace while preserving intentional spacing
+  text = text.replace(/[ \t]+/g, ' '); // Replace multiple spaces/tabs with single space
+  text = text.replace(/\n[ \t]+/g, '\n'); // Remove leading spaces on lines
+  text = text.replace(/[ \t]+\n/g, '\n'); // Remove trailing spaces on lines
+  text = text.replace(/\n{3,}/g, '\n\n'); // Limit to maximum 2 consecutive newlines
+  
+  return text.trim();
+}
+
+/**
  * Clear potentially problematic localStorage data
  * This helps resolve issues when document types or user preferences have changed
  */

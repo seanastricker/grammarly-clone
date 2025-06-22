@@ -10,7 +10,7 @@
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { extractPlainTextFromHTML } from '@/lib/utils';
+import { extractPlainTextFromHTML, convertHTMLToFormattedText } from '@/lib/utils';
 import type { Document } from '@/types/document';
 import type { AIGrammarStatistics } from '@/services/ai/grammar-ai-service';
 
@@ -162,36 +162,163 @@ async function exportToPDFInternal(
     addWrappedText('Campaign Content', 18, 'bold');
     currentY += 5;
 
-    // Convert HTML content to plain text for PDF
-    const plainText = extractPlainTextFromHTML(document.content);
+    // Convert HTML content to formatted text preserving structure
+    const formattedText = convertHTMLToFormattedText(document.content);
     
-    // Split content into sections if it contains headers
-    const sections = plainText.split(/(?=^[A-Z][^.]*$)/gm).filter(section => section.trim());
+    // Process the formatted text line by line to handle different elements
+    const lines = formattedText.split('\n');
     
-    if (sections.length > 1) {
-      // Content has sections - format as such
-      sections.forEach(section => {
-        const lines = section.trim().split('\n');
-        const firstLine = lines[0].trim();
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // Skip empty lines but add spacing
+      if (line.trim() === '') {
+        currentY += 3;
+        continue;
+      }
+      
+      // Handle different formatting styles
+      if (line.match(/^={60}$/)) {
+        // H1 underline - skip, we'll handle with the title above
+        continue;
+      } else if (line.match(/^-{40}$/)) {
+        // H2 underline - skip, we'll handle with the title above
+        continue;
+      } else if (line.match(/^-{20}$/)) {
+        // H3 underline - skip, we'll handle with the title above
+        continue;
+      } else if (line.match(/^-{60}$/)) {
+        // Horizontal rule
+        checkPageBreak(5);
+        pdf.setDrawColor(139, 69, 19);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 5;
+        continue;
+      } else if (i < lines.length - 1 && lines[i + 1].match(/^={60}$/)) {
+        // H1 title (next line is underline)
+        addWrappedText(line, 16, 'bold');
+        currentY += 3;
+      } else if (i < lines.length - 1 && lines[i + 1].match(/^-{40}$/)) {
+        // H2 title (next line is underline)
+        addWrappedText(line, 14, 'bold');
+        currentY += 2;
+      } else if (i < lines.length - 1 && lines[i + 1].match(/^-{20}$/)) {
+        // H3 title (next line is underline)
+        addWrappedText(line, 13, 'bold');
+        currentY += 2;
+      } else if (line.match(/^[^:]+:$/)) {
+        // H4-H6 titles (end with colon)
+        addWrappedText(line, 12, 'bold');
+        currentY += 1;
+      } else if (line.startsWith('• ')) {
+        // Bullet list item
+        const text = line.substring(2);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
         
-        // Check if first line looks like a header (short, all caps or title case)
-        if (firstLine.length < 100 && /^[A-Z]/.test(firstLine)) {
-          addWrappedText(firstLine, 14, 'bold');
+        // Add bullet point
+        const bulletX = margin + 5;
+        const textX = margin + 10;
+        
+        checkPageBreak(5);
+        pdf.text('•', bulletX, currentY);
+        
+        // Wrap text with proper indentation
+        const wrappedLines = pdf.splitTextToSize(text, contentWidth - 15);
+        wrappedLines.forEach((wrappedLine: string, index: number) => {
+          if (index > 0) checkPageBreak(4);
+          pdf.text(wrappedLine, textX, currentY);
+          currentY += 4;
+        });
+        
+        currentY += 1; // Small spacing after list item
+      } else if (line.match(/^\d+\. /)) {
+        // Numbered list item
+        const match = line.match(/^(\d+\. )(.*)$/);
+        if (match) {
+          const number = match[1];
+          const text = match[2];
           
-          // Add remaining content
-          const content = lines.slice(1).join('\n').trim();
-          if (content) {
-            addWrappedText(content, 11);
-          }
-        } else {
-          addWrappedText(section.trim(), 11);
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'normal');
+          
+          checkPageBreak(5);
+          
+          // Add number
+          const numberWidth = pdf.getTextWidth(number);
+          pdf.text(number, margin + 5, currentY);
+          
+          // Wrap text with proper indentation
+          const wrappedLines = pdf.splitTextToSize(text, contentWidth - numberWidth - 10);
+          wrappedLines.forEach((wrappedLine: string, index: number) => {
+            if (index > 0) checkPageBreak(4);
+            pdf.text(wrappedLine, margin + 5 + numberWidth, currentY);
+            currentY += 4;
+          });
+          
+          currentY += 1; // Small spacing after list item
+        }
+      } else if (line.startsWith('> ')) {
+        // Blockquote
+        const text = line.substring(2);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'italic');
+        
+        checkPageBreak(5);
+        
+        // Add quote indicator
+        pdf.setDrawColor(139, 69, 19);
+        pdf.setLineWidth(2);
+        pdf.line(margin, currentY - 2, margin, currentY + 3);
+        
+        // Add quoted text with indentation
+        const wrappedLines = pdf.splitTextToSize(text, contentWidth - 10);
+        wrappedLines.forEach((wrappedLine: string) => {
+          checkPageBreak(4);
+          pdf.text(wrappedLine, margin + 8, currentY);
+          currentY += 4;
+        });
+        
+        currentY += 2; // Extra spacing after blockquote
+      } else if (line.startsWith('```') && line.endsWith('```')) {
+        // Inline code block
+        const text = line.substring(3, line.length - 3);
+        pdf.setFontSize(10);
+        pdf.setFont('courier', 'normal');
+        
+        checkPageBreak(6);
+        
+        // Add background rectangle
+        pdf.setFillColor(245, 245, 245);
+        const textWidth = pdf.getTextWidth(text);
+        pdf.rect(margin, currentY - 3, Math.min(textWidth + 4, contentWidth), 6, 'F');
+        
+        pdf.text(text, margin + 2, currentY);
+        currentY += 8;
+      } else {
+        // Regular paragraph text
+        // Handle bold, italic, and underline formatting
+        let processedLine = line;
+        let fontSize = 11;
+        let fontStyle: 'normal' | 'bold' = 'normal';
+        
+        // Simple formatting detection (this could be enhanced)
+        if (processedLine.includes('**')) {
+          // Contains bold text - for simplicity, make whole line bold if it has bold formatting
+          fontStyle = 'bold';
+          processedLine = processedLine.replace(/\*\*(.*?)\*\*/g, '$1');
+        } else if (processedLine.includes('*')) {
+          // Contains italic text - handle as normal since addWrappedText doesn't support italic
+          processedLine = processedLine.replace(/\*(.*?)\*/g, '$1');
         }
         
-        currentY += 5; // Extra spacing between sections
-      });
-    } else {
-      // Single section - just add the content
-      addWrappedText(plainText, 11);
+        // Remove any remaining markdown formatting
+        processedLine = processedLine.replace(/`(.*?)`/g, '$1'); // code
+        processedLine = processedLine.replace(/_(.*?)_/g, '$1'); // underline
+        
+        addWrappedText(processedLine, fontSize, fontStyle);
+      }
     }
 
     // Footer on each page
@@ -249,9 +376,9 @@ async function exportToText(
     content += 'CAMPAIGN CONTENT\n';
     content += '-'.repeat(16) + '\n\n';
     
-    // Convert HTML to plain text
-    const plainText = extractPlainTextFromHTML(document.content);
-    content += plainText;
+    // Convert HTML to formatted text preserving structure
+    const formattedText = convertHTMLToFormattedText(document.content);
+    content += formattedText;
 
     content += '\n\n' + '='.repeat(60) + '\n';
     content += 'End of Campaign\n';
