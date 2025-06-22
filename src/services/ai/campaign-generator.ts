@@ -252,7 +252,12 @@ For each encounter, provide:
 - Difficulty appropriate for the party level
 - Backup plans for different player approaches
 
-
+IMPORTANT FORMATTING REQUIREMENTS:
+- NPCs must have unique, specific personalities, motivations, and descriptions - NO generic content
+- Locations must have creative names, specific types (Inn, Dungeon, Forest, etc.), and detailed descriptions  
+- Follow the exact format specified in the user prompt for NPCs and Locations
+- Avoid generic fallbacks like "Friendly and helpful" or "A helpful character"
+- Make each NPC and Location memorable and unique to this specific campaign
 
 Respond in a structured format that can be easily parsed and presented to the DM.`;
 }
@@ -296,10 +301,25 @@ CONCLUSION:
 [Resolution and rewards - 10-15 minutes]
 
 NPCS:
-[List of important NPCs with names, roles, and brief descriptions]
+[Format each NPC exactly as follows - one NPC per paragraph:]
+
+NPC Name: [Actual name of the NPC - NOT "NPC 1"]
+Race: [Specific race like Human, Elf, Dwarf, etc. - NOT generic terms]
+Role: [Specific role like Tavern Keeper, Village Elder, Merchant, etc.]
+Personality: [Unique personality traits specific to this character - NOT generic]
+Motivation: [Character-specific goals and desires - NOT generic]
+Description: [Detailed description of the character's role in the campaign and importance]
+
+[Repeat the above format for each NPC]
 
 LOCATIONS:
-[Key locations with descriptions]
+[Format each location exactly as follows - one location per paragraph:]
+
+Location Name: [Specific name of the location]
+Type: [Specific type like Inn, Dungeon, Forest, City, Mansion, etc. - NOT just "Area"]
+Description: [Detailed description explaining the location's importance to the campaign and what happens there]
+
+[Repeat the above format for each location]
 
 
 
@@ -383,22 +403,22 @@ function parseCampaignResponse(content: string, parameters: CampaignParameters):
   const npcsMatch = content.match(/NPCS:\s*([\s\S]*?)(?=LOCATIONS:|STAT BLOCKS:|HANDOUTS:|PACING NOTES:|$)/i);
   if (npcsMatch) {
     const npcsText = npcsMatch[1].trim();
-    // Split by lines that start with a name pattern or bullet points
-    const npcLines = npcsText.split(/\n(?=\w+(?:\s+\w+)*:|\*|\-|\d+\.)/);
+    // Split by lines that start with "NPC Name:"
+    const npcLines = npcsText.split(/\n(?=NPC Name:)/i);
     
     npcLines.forEach((npcText, index) => {
       if (npcText.trim()) {
         // Try to extract NPC information from the text
-        const nameMatch = npcText.match(/^([^:\n]+):/);
-        const raceRoleMatch = npcText.match(/(?:Race|Species):\s*([^,\n]+)(?:,?\s*(?:Role|Class|Occupation):\s*([^,\n]+))?/i) || 
-                             npcText.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
-        const personalityMatch = npcText.match(/(?:Personality|Character):\s*([^\n]+)/i);
-        const motivationMatch = npcText.match(/(?:Motivation|Goal):\s*([^\n]+)/i);
-        const descriptionMatch = npcText.match(/(?:Description|Background):\s*([^\n]+)/i);
+        const nameMatch = npcText.match(/NPC Name:\s*([^\n]+)/i);
+        const raceMatch = npcText.match(/Race:\s*([^\n]+)/i);
+        const roleMatch = npcText.match(/Role:\s*([^\n]+)/i);
+        const personalityMatch = npcText.match(/Personality:\s*([^\n]+)/i);
+        const motivationMatch = npcText.match(/Motivation:\s*([^\n]+)/i);
+        const descriptionMatch = npcText.match(/Description:\s*([^\n]+)/i);
 
         const name = nameMatch?.[1]?.trim() || `NPC ${index + 1}`;
-        const race = raceRoleMatch?.[1]?.trim() || 'Human';
-        const role = raceRoleMatch?.[2]?.trim() || 'Villager';
+        const race = raceMatch?.[1]?.trim() || 'Human';
+        const role = roleMatch?.[1]?.trim() || 'Villager';
         const personality = personalityMatch?.[1]?.trim() || 'Friendly and helpful';
         const motivation = motivationMatch?.[1]?.trim() || 'Help the party succeed';
         const description = descriptionMatch?.[1]?.trim() || npcText.split('\n')[1]?.trim() || 'A helpful character the party encounters';
@@ -420,13 +440,13 @@ function parseCampaignResponse(content: string, parameters: CampaignParameters):
   const locationsMatch = content.match(/LOCATIONS:\s*([\s\S]*?)(?=STAT BLOCKS:|HANDOUTS:|PACING NOTES:|$)/i);
   if (locationsMatch) {
     const locationsText = locationsMatch[1].trim();
-    const locationLines = locationsText.split(/\n(?=\w+(?:\s+\w+)*:|\*|\-|\d+\.)/);
+    const locationLines = locationsText.split(/\n(?=Location Name:)/i);
     
     locationLines.forEach((locationText, index) => {
       if (locationText.trim()) {
-        const nameMatch = locationText.match(/^([^:\n]+):/);
-        const typeMatch = locationText.match(/(?:Type|Kind):\s*([^\n]+)/i);
-        const descriptionMatch = locationText.match(/(?:Description|Details):\s*([^\n]+)/i);
+        const nameMatch = locationText.match(/Location Name:\s*([^\n]+)/i);
+        const typeMatch = locationText.match(/Type:\s*([^\n]+)/i);
+        const descriptionMatch = locationText.match(/Description:\s*([^\n]+)/i);
 
         const name = nameMatch?.[1]?.trim() || `Location ${index + 1}`;
         const type = typeMatch?.[1]?.trim() || 'Area';
@@ -1232,39 +1252,67 @@ Cantrips (at will): druidcraft, guidance, produce flame
  * Create system prompt for campaign refinement
  */
 function createRefinementSystemPrompt(campaign: GeneratedCampaign): string {
-  return `You are an expert Dungeon Master helping to refine and improve an existing D&D 5e campaign. 
+  return `You are an expert D&D campaign assistant. You will receive a campaign and a user request to modify it.
 
-Current Campaign: "${campaign.title}"
-Duration: ${campaign.parameters.duration} hours
-Players: ${campaign.parameters.playerCount} level ${campaign.parameters.characterLevel} characters
+CRITICAL: You must respond with ONLY a valid JSON object containing the complete updated campaign.
 
-Your role is to make thoughtful modifications while maintaining:
-- Campaign coherence and narrative flow
-- Appropriate pacing for the time limit
-- Balanced encounters for the party level
-- Consistency with the established tone and theme
+Current Campaign Structure:
+${JSON.stringify(campaign, null, 2)}
 
-When making changes:
-- Be specific about what you're modifying
-- Explain why the changes improve the campaign
-- Provide updated content when applicable
-- Ensure all changes support the overall narrative
-- Maintain encounter balance and timing
+Your task:
+1. Apply the requested changes to the campaign
+2. Maintain D&D 5e compatibility and balance
+3. Keep narrative coherence
+4. Return the COMPLETE updated campaign as JSON
 
-IMPORTANT: Structure your response as follows:
-
-CHANGES MADE:
-- [List each specific change you made]
-- [Be concrete about what was modified]
-
-UPDATED CONTENT:
-[If you're changing names, locations, encounters, etc., provide the new content here]
-
-SUGGESTIONS:
-- [Additional recommendations for the DM]
-- [Tips for implementing the changes]
-
-Focus on making actual, implementable changes rather than general advice.`;
+Response format (JSON only - no other text):
+{
+  "success": true,
+  "updatedCampaign": {
+    "id": "${campaign.id}",
+    "title": "Updated title",
+    "parameters": ${JSON.stringify(campaign.parameters)},
+    "introduction": "Updated introduction...",
+    "plotHooks": ["updated hooks"],
+    "encounters": [
+      {
+        "id": "unique_id",
+        "title": "Encounter Title",
+        "type": "combat|social|exploration|puzzle|trap",
+        "description": "Description",
+        "estimatedDuration": 30,
+        "difficultyLevel": 5,
+        "order": 1
+      }
+    ],
+    "npcs": [
+      {
+        "id": "unique_id",
+        "name": "NPC Name", 
+        "race": "Race",
+        "role": "Role",
+        "personality": "Personality",
+        "motivation": "Motivation",
+        "description": "Description"
+      }
+    ],
+    "locations": [
+      {
+        "id": "unique_id",
+        "name": "Location Name",
+        "type": "Type",
+        "description": "Description"
+      }
+    ],
+    "conclusion": "Updated conclusion",
+    "estimatedDuration": ${campaign.estimatedDuration},
+    "difficultyRating": "${campaign.difficultyRating}",
+    "generatedAt": "${campaign.generatedAt.toISOString()}",
+    "lastRefinedAt": "${new Date().toISOString()}"
+  },
+  "changes": ["List of changes made"],
+  "suggestions": ["Additional suggestions"]
+}`;
 }
 
 /**
@@ -1287,177 +1335,45 @@ Format your response clearly so I can apply the changes to the campaign.`;
 }
 
 /**
- * Parse refinement response from OpenAI and apply changes
+ * Parse JSON refinement response from OpenAI
  */
 function parseRefinementResponse(content: string, originalCampaign: GeneratedCampaign): RefinementResponse {
-  const changes: string[] = [];
-  let updatedCampaign = JSON.parse(JSON.stringify(originalCampaign));
-  updatedCampaign.lastRefinedAt = new Date();
+  console.log('🎲 parseRefinementResponse called - attempting JSON parse...');
+  console.log('🎲 Raw AI response:', content);
   
   try {
-    // Look for structured changes in the AI response
-    const changesMatch = content.match(/CHANGES MADE:\s*([\s\S]*?)(?=SUGGESTIONS:|$)/i);
-    if (changesMatch) {
-      const changesText = changesMatch[1].trim();
-      const changesList = changesText.split(/\n[-•*]\s+/).filter(change => change.trim());
-      changes.push(...changesList);
-    }
+    // Try to parse as JSON directly
+    const response = JSON.parse(content);
     
-    // Look for specific content updates
-    const titleMatch = content.match(/UPDATED TITLE:\s*(.+)/i);
-    if (titleMatch) {
-      updatedCampaign.title = titleMatch[1].trim();
-      changes.push(`Updated campaign title to: "${updatedCampaign.title}"`);
-    }
-    
-    const introMatch = content.match(/UPDATED INTRODUCTION:\s*([\s\S]*?)(?=UPDATED|$)/i);
-    if (introMatch) {
-      updatedCampaign.introduction = introMatch[1].trim();
-      changes.push('Updated campaign introduction');
-    }
-    
-    // Parse OpenAI response for actual content changes
-    // Look for location/name changes in the response
-    let locationChangeMatch = content.match(/changed?\s+(?:the\s+)?(?:name\s+of\s+)?(?:the\s+)?(?:village|town|city|location)\s+from\s+(\w+)\s+to\s+['""]?(\w+)['""]?/i);
-    
-    // Try alternative patterns if the first one doesn't match
-    if (!locationChangeMatch) {
-      locationChangeMatch = content.match(/changed?\s+(?:the\s+)?(?:village|town|city|location)\s+name.*to\s+['""]?(\w+)['""]?/i);
-      if (locationChangeMatch) {
-        // We found the new name but need to find the old name from the campaign
-        const newName = locationChangeMatch[1];
-        console.log('🎲 OpenAI mentioned new name:', newName, '- searching for old name in campaign...');
-        
-        // Find the old name from the campaign content
-        let oldName = '';
-        
-        // Check locations array first
-        if (updatedCampaign.locations.length > 0) {
-          oldName = updatedCampaign.locations[0].name;
-        } else {
-          // Look for town/city names in the introduction
-          const locationPatterns = [
-            /(?:town|city|village|settlement) of (\w+)/i,
-            /(?:mining|trading|fishing|farming)\s+(?:town|city|village|settlement) of (\w+)/i,
-            /in (\w+),?\s+(?:a|the)\s+(?:town|city|village)/i,
-            /(?:arrive|travel|journey) to (\w+)/i,
-            /(\w+)\s+is a (?:town|city|village)/i,
-            /(?:in|to|at)\s+(\w+),?\s+(?:a|the|now)\s+(?:once\s+)?(?:prosperous\s+)?(?:mining|trading|fishing|farming)?\s*(?:town|city|village|settlement)/i
-          ];
-          
-          for (const pattern of locationPatterns) {
-            const match = updatedCampaign.introduction.match(pattern);
-            if (match && match[1]) {
-              oldName = match[1];
-              break;
-            }
-          }
-        }
-        
-                 if (oldName && oldName !== newName) {
-           console.log('🎲 Found old name in campaign:', oldName);
-           locationChangeMatch = ['', oldName, newName] as RegExpMatchArray; // Fake the match format
-         }
-      }
-    }
-    
-    if (locationChangeMatch && locationChangeMatch.length >= 3) {
-      const oldName = locationChangeMatch[1];
-      const newName = locationChangeMatch[2];
-      console.log('🎲 OpenAI detected location change:', oldName, 'to', newName);
+    if (response.success && response.updatedCampaign) {
+      console.log('🎲 Successfully parsed JSON response');
       
-      // Apply the same text replacement logic as demo refinement
-      const replaceText = (text: string): string => {
-        if (!text) return text;
-        return text.replace(new RegExp(oldName, 'gi'), newName);
+      // Ensure dates are properly handled
+      const updatedCampaign = {
+        ...response.updatedCampaign,
+        generatedAt: new Date(response.updatedCampaign.generatedAt),
+        lastRefinedAt: new Date()
       };
       
-      // Update all campaign content
-      updatedCampaign.title = replaceText(updatedCampaign.title);
-      updatedCampaign.introduction = replaceText(updatedCampaign.introduction);
-      updatedCampaign.conclusion = replaceText(updatedCampaign.conclusion);
-      
-      // Update plot hooks
-      updatedCampaign.plotHooks = updatedCampaign.plotHooks.map(replaceText);
-      
-      // Update encounters
-      updatedCampaign.encounters = updatedCampaign.encounters.map((encounter: CampaignEncounter) => ({
-        ...encounter,
-        title: replaceText(encounter.title),
-        description: replaceText(encounter.description)
-      }));
-      
-      // Update NPCs
-      updatedCampaign.npcs = updatedCampaign.npcs.map((npc: CampaignNPC) => ({
-        ...npc,
-        description: replaceText(npc.description),
-        motivation: replaceText(npc.motivation)
-      }));
-      
-      // Update locations
-      updatedCampaign.locations = updatedCampaign.locations.map((location: CampaignLocation) => ({
-        ...location,
-        name: replaceText(location.name),
-        description: replaceText(location.description)
-      }));
-      
-      console.log('🎲 Applied location name change throughout campaign');
-      changes.push(`Changed location name from "${oldName}" to "${newName}" throughout the campaign`);
+      return {
+        success: true,
+        updatedCampaign,
+        changes: response.changes || ['Campaign updated successfully'],
+        suggestions: response.suggestions || []
+      };
     }
-    
-    // If the response doesn't have structured updates, try to parse the request manually
-    // This is a fallback for when OpenAI doesn't follow the exact format
-    if (changes.length === 0) {
-      console.log('🎲 No structured changes found, applying manual parsing...');
-      // Use the same logic as demo refinement for common cases
+  } catch (error) {
+    console.warn('🎲 Failed to parse JSON response, falling back to demo refinement');
+    console.warn('🎲 Parse error:', error);
+  }
+  
+  // Fallback to demo refinement if JSON parsing fails
+  console.log('🎲 Using demo refinement as fallback');
       return generateDemoRefinement(originalCampaign, { 
         campaignId: originalCampaign.id, 
         requestType: 'general', 
         description: content 
       });
-    }
-    
-    // If no structured changes found, extract key information from the response
-    if (changes.length === 0) {
-      const lines = content.split('\n').filter(line => line.trim());
-      for (const line of lines) {
-        if (line.includes('changed') || line.includes('updated') || line.includes('modified')) {
-          changes.push(line.trim());
-        }
-      }
-    }
-    
-    // Fallback if still no changes found
-    if (changes.length === 0) {
-      changes.push('Applied refinements based on AI analysis');
-    }
-    
-  } catch (error) {
-    console.error('Error parsing refinement response:', error);
-    changes.push('Applied general refinements to the campaign');
-  }
-  
-  // Extract suggestions
-  const suggestions: string[] = [];
-  const suggestionsMatch = content.match(/SUGGESTIONS:\s*([\s\S]*?)$/i);
-  if (suggestionsMatch) {
-    const suggestionsText = suggestionsMatch[1].trim();
-    const suggestionsList = suggestionsText.split(/\n[-•*]\s+/).filter(suggestion => suggestion.trim());
-    suggestions.push(...suggestionsList);
-  } else {
-    suggestions.push(
-      'Review the updated content for consistency',
-      'Consider how changes affect the overall narrative flow',
-      'Test the modifications with your player group'
-    );
-  }
-  
-  return {
-    success: true,
-    updatedCampaign,
-    changes,
-    suggestions
-  };
 }
 
 /**

@@ -172,7 +172,19 @@ export function CampaignGeneratorWidget({
       setGeneratedCampaign(updatedCampaign);
       
       // Generate and update the displayed HTML immediately
+      console.log('🎲 About to format campaign for editor...');
+      console.log('🎲 Updated campaign structure:', {
+        title: updatedCampaign.title,
+        introduction: updatedCampaign.introduction?.substring(0, 100) + '...',
+        encountersCount: updatedCampaign.encounters?.length,
+        npcsCount: updatedCampaign.npcs?.length,
+        locationsCount: updatedCampaign.locations?.length
+      });
+      
       const updatedHtml = formatCampaignForEditor(updatedCampaign);
+      console.log('🎲 Generated HTML length:', updatedHtml.length);
+      console.log('🎲 Generated HTML preview:', updatedHtml.substring(0, 200) + '...');
+      
       setDisplayedCampaignHtml(updatedHtml);
       
       console.log('🎲 State updated - campaign and display HTML set successfully');
@@ -206,7 +218,14 @@ export function CampaignGeneratorWidget({
   };
 
   const formatCampaignForEditor = (campaign: GeneratedCampaign): string => {
-    let content = `<h1>${campaign.title}</h1>`;
+    console.log('🎲 formatCampaignForEditor called with campaign:', campaign?.title);
+    
+    if (!campaign) {
+      console.error('🎲 formatCampaignForEditor: No campaign provided!');
+      return '';
+    }
+    
+    let content = `<h1>${campaign.title || 'Untitled Campaign'}</h1>`;
     
     content += `<h2>Campaign Overview</h2>`;
     content += `<p><strong>Duration:</strong> ${campaign.parameters.duration} hours</p>`;
@@ -273,6 +292,7 @@ export function CampaignGeneratorWidget({
     content += `<h2>Conclusion</h2>`;
     content += `<p>${campaign.conclusion}</p>`;
     
+    console.log('🎲 formatCampaignForEditor completed. Final content length:', content.length);
     return content;
   };
 
