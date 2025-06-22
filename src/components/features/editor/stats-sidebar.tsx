@@ -117,27 +117,27 @@ export const StatsSidebar: React.FC<StatsSidebarProps> = ({
         <h3 className="font-semibold text-slate-900">Statistics</h3>
         
         <div className="space-y-3">
-          <div className="flex justify-between">
+          <div className="flex flex-col">
             <span className="text-sm text-slate-600">Words</span>
             <span className="text-sm font-medium text-slate-900">{formatNumber(stats.wordCount)}</span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex flex-col">
             <span className="text-sm text-slate-600">Characters</span>
             <span className="text-sm font-medium text-slate-900">{formatNumber(stats.characterCount)}</span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex flex-col">
             <span className="text-sm text-slate-600">No spaces</span>
             <span className="text-sm font-medium text-slate-900">{formatNumber(stats.characterCountNoSpaces)}</span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex flex-col">
             <span className="text-sm text-slate-600">Paragraphs</span>
             <span className="text-sm font-medium text-slate-900">{formatNumber(stats.paragraphCount)}</span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex flex-col">
             <span className="text-sm text-slate-600">Reading time</span>
             <span className="text-sm font-medium text-slate-900">{stats.readingTime} min</span>
           </div>
