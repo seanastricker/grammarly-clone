@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { GuestLayout } from '@/components/layout/guest-layout';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import { ArrowLeft, UserPlus, AlertCircle } from 'lucide-react';
+import { validatePassword, getPasswordRequirements } from '@/lib/utils';
 
 /**
  * Signup page component
@@ -28,14 +29,36 @@ export const SignupPage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  const handlePasswordChange = (newPassword: string) => {
+    setPassword(newPassword);
+    
+    // Validate password in real-time
+    if (newPassword) {
+      const validation = validatePassword(newPassword);
+      setPasswordErrors(validation.errors);
+    } else {
+      setPasswordErrors([]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setPasswordErrors(passwordValidation.errors);
+      setError('Please fix the password requirements below');
+      setLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -134,10 +157,28 @@ export const SignupPage: React.FC = () => {
                   type="password"
                   placeholder="Create a strong password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
                   required
-                  className="w-full"
+                  className={`w-full ${passwordErrors.length > 0 ? 'border-red-500' : ''}`}
                 />
+                
+                {/* Password Requirements */}
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium mb-1">Password Requirements:</p>
+                  <p className="text-sm text-blue-700">{getPasswordRequirements()}</p>
+                </div>
+                
+                {/* Password Validation Errors */}
+                {passwordErrors.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {passwordErrors.map((error, index) => (
+                      <div key={index} className="flex items-center space-x-2 text-red-600">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">{error}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>

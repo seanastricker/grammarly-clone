@@ -314,7 +314,7 @@ function getAuthErrorMessage(errorCode: string): string {
     case 'auth/email-already-in-use':
       return 'An account with this email already exists.';
     case 'auth/weak-password':
-      return 'Password should be at least 6 characters long.';
+      return 'Password must be at least 8 characters and include uppercase, lowercase, and a number.';
     case 'auth/invalid-email':
       return 'Please enter a valid email address.';
     case 'auth/too-many-requests':

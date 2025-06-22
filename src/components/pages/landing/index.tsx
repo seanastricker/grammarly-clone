@@ -7,10 +7,15 @@
  */
 
 import React, { useState } from 'react';
+import { AuthForm } from '@/components/features/landing/auth-form';
+import { TrustIndicators } from '@/components/features/landing/trust-indicators';
+import { LogoHeader } from '@/components/features/landing/logo-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
+import { validatePassword, getPasswordRequirements } from '@/lib/utils';
+import { AlertCircle } from 'lucide-react';
 
 /**
  * Landing page component
@@ -26,12 +31,25 @@ export const LandingPage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
   const { signIn, signUp, continueAsGuest } = useAuth();
 
   // Clear error when user starts typing or switches tabs
   const clearError = () => {
     if (error) setError(null);
+  };
+
+  const handlePasswordChange = (newPassword: string) => {
+    setPassword(newPassword);
+    
+    // Validate password in real-time for signup
+    if (newPassword) {
+      const validation = validatePassword(newPassword);
+      setPasswordErrors(validation.errors);
+    } else {
+      setPasswordErrors([]);
+    }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -53,6 +71,15 @@ export const LandingPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setPasswordErrors(passwordValidation.errors);
+      setError('Please fix the password requirements below');
+      setLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -280,7 +307,7 @@ export const LandingPage: React.FC = () => {
                     type="password"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                     disabled={loading}
                     required
                     style={{
@@ -389,12 +416,12 @@ export const LandingPage: React.FC = () => {
                     type="password"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                     disabled={loading}
                     required
                     style={{
                       backgroundColor: '#ffffff',
-                      border: '1px solid #d1d5db',
+                      border: passwordErrors.length > 0 ? '1px solid #ef4444' : '1px solid #d1d5db',
                       borderRadius: '8px',
                       padding: '10px 12px',
                       fontSize: '14px',
@@ -402,6 +429,44 @@ export const LandingPage: React.FC = () => {
                       width: '100%'
                     }}
                   />
+                  
+                  {/* Password Requirements */}
+                  <div style={{
+                    backgroundColor: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '8px'
+                  }}>
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#1e40af',
+                      fontWeight: '500',
+                      marginBottom: '4px'
+                    }}>Password Requirements:</p>
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#3730a3'
+                    }}>{getPasswordRequirements()}</p>
+                  </div>
+                  
+                  {/* Password Validation Errors */}
+                  {passwordErrors.length > 0 && (
+                    <div style={{ marginTop: '8px' }}>
+                      {passwordErrors.map((error, index) => (
+                        <div key={index} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          color: '#dc2626',
+                          marginBottom: '4px'
+                        }}>
+                          <AlertCircle size={16} />
+                          <span style={{ fontSize: '12px' }}>{error}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <Input
                     type="password"
                     placeholder="Confirm Password"

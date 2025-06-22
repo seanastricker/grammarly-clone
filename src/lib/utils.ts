@@ -444,4 +444,90 @@ export function applyMultipleTextChangesToHTML(
     appliedCount,
     failedCount
   };
+}
+
+/**
+ * Password validation interface
+ */
+export interface PasswordValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+/**
+ * Validate password strength according to security requirements
+ * Requirements:
+ * - At least 8 characters
+ * - At least one uppercase letter
+ * - At least one lowercase letter
+ * - At least one number
+ */
+export function validatePassword(password: string): PasswordValidationResult {
+  const errors: string[] = [];
+
+  // Check minimum length
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+
+  // Check for uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+
+  // Check for lowercase letter
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+
+  // Check for number
+  if (!/[0-9]/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ * Get a formatted password requirements message for display
+ */
+export function getPasswordRequirements(): string {
+  return 'Password must be at least 8 characters and include uppercase, lowercase, and a number.';
+}
+
+/**
+ * Get password strength score (0-4)
+ * 0 = Very weak, 4 = Strong
+ */
+export function getPasswordStrength(password: string): number {
+  let score = 0;
+  
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  
+  return score;
+}
+
+/**
+ * Get password strength label
+ */
+export function getPasswordStrengthLabel(score: number): string {
+  switch (score) {
+    case 0:
+    case 1:
+      return 'Very Weak';
+    case 2:
+      return 'Weak';
+    case 3:
+      return 'Good';
+    case 4:
+      return 'Strong';
+    default:
+      return 'Unknown';
+  }
 } 

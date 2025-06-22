@@ -17,6 +17,7 @@ import { auth } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User, Mail, Lock, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { validatePassword, getPasswordRequirements } from '@/lib/utils';
 
 interface FormData {
   displayName: string;
@@ -30,7 +31,7 @@ interface FormErrors {
   displayName?: string;
   email?: string;
   currentPassword?: string;
-  newPassword?: string;
+  newPassword?: string | string[];
   confirmPassword?: string;
 }
 
@@ -106,8 +107,12 @@ export const SettingsPage: React.FC = () => {
       
       if (!formData.newPassword) {
         newErrors.newPassword = 'New password is required';
-      } else if (formData.newPassword.length < 6) {
-        newErrors.newPassword = 'Password must be at least 6 characters';
+      } else {
+        // Use the new password validation utility
+        const passwordValidation = validatePassword(formData.newPassword);
+        if (!passwordValidation.isValid) {
+          newErrors.newPassword = passwordValidation.errors;
+        }
       }
       
       if (!formData.confirmPassword) {
@@ -373,6 +378,12 @@ export const SettingsPage: React.FC = () => {
                 <h2 className="text-xl font-semibold">Change Password</h2>
               </div>
               
+              {/* Password Requirements */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800 font-medium mb-1">Password Requirements:</p>
+                <p className="text-sm text-blue-700">{getPasswordRequirements()}</p>
+              </div>
+              
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
                   <label htmlFor="currentPasswordChange" className="block text-sm font-medium text-gray-700 mb-2">
@@ -407,9 +418,20 @@ export const SettingsPage: React.FC = () => {
                     placeholder="Enter new password"
                   />
                   {errors.newPassword && (
-                    <div className="flex items-center space-x-2 mt-2 text-red-600">
-                      <AlertCircle className="w-4 h-4" />
-                      <span className="text-sm">{errors.newPassword}</span>
+                    <div className="mt-2 space-y-1">
+                      {Array.isArray(errors.newPassword) ? (
+                        errors.newPassword.map((error, index) => (
+                          <div key={index} className="flex items-center space-x-2 text-red-600">
+                            <AlertCircle className="w-4 h-4" />
+                            <span className="text-sm">{error}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center space-x-2 text-red-600">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-sm">{errors.newPassword}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
