@@ -178,7 +178,7 @@ export const DashboardPage: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl lg:text-4xl font-bold text-slate-900">
-                  Welcome back, {userName}!
+                  {user?.isGuest ? 'Welcome!' : `Welcome back, ${userName}!`}
                 </h1>
                 <div className="text-2xl">👋</div>
               </div>

@@ -13,10 +13,12 @@ import { useGrammarAnalysis } from '@/hooks/use-grammar-analysis';
 import { RichTextEditor } from '@/components/features/editor/rich-text-editor';
 import { StatsSidebar } from '@/components/features/editor/stats-sidebar';
 import { ExportModal } from '@/components/features/editor/export-modal';
+import { DocumentSettingsModal } from '@/components/features/editor/document-settings-modal';
 import { UnifiedAIAssistant } from '@/components/features/editor/unified-ai-assistant';
 import type { AnalyzedError } from '@/services/ai/language-tool';
 import type { WritingSuggestion } from '@/services/ai/openai-service';
 import type { AIGrammarError } from '@/services/ai/grammar-ai-service';
+import type { DocumentType } from '@/types/document';
 import { cn, extractPlainTextFromHTML, applyTextChangeToHTML, applyMultipleTextChangesToHTML } from '@/lib/utils';
 
 // Type for grammar error suggestions
@@ -45,6 +47,7 @@ export const EditorPage: React.FC = () => {
     isReady,
     updateContent,
     saveDocument,
+    updateDocumentMetadata,
     goBack
   } = useDocumentEditor();
 
@@ -53,6 +56,7 @@ export const EditorPage: React.FC = () => {
   const [showStats, setShowStats] = useState(true);
   const [showAISuggestions, setShowAISuggestions] = useState(true);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showDocumentSettings, setShowDocumentSettings] = useState(false);
 
   // Grammar analysis hook
   const {
@@ -198,40 +202,36 @@ export const EditorPage: React.FC = () => {
     const followsSentenceEnd = sentenceEndPattern.test(beforeText);
     
     console.log('🔧 Sentence end check:', {
-      beforeText: beforeText.slice(-20),
-      followsSentenceEnd,
-      shouldPreserve: followsSentenceEnd
+      beforeText: beforeText.slice(-10),
+      followsSentenceEnd
     });
     
     return followsSentenceEnd;
   };
 
   /**
-   * Capitalize the first letter of a string
+   * Capitalize first letter of text
    */
   const capitalizeFirstLetter = (text: string): string => {
-    if (!text) return text;
-    const result = text.charAt(0).toUpperCase() + text.slice(1);
-    console.log('🔧 Capitalizing:', { original: text, result });
-    return result;
+    return text.charAt(0).toUpperCase() + text.slice(1);
   };
 
   const handleDismissError = (errorId: string) => {
-    console.log('🔧 PARENT: Dismissing error via hook:', { errorId, currentErrors: grammarErrors.length });
-    
-    // Use the hook's dismissError function which tracks dismissed errors
+    console.log('🔧 Dismissing error:', errorId);
     dismissError(errorId);
   };
 
   const handleAcceptAll = (type?: 'grammar' | 'spelling' | 'style') => {
-    console.log('🔧 ACCEPT ALL - Starting bulk application:', { type, totalErrors: grammarErrors.length });
-    
-    // Get errors to apply
+    console.log('🔧 ACCEPT ALL - Starting batch application:', { 
+      type, 
+      totalErrors: grammarErrors.length,
+      filteredErrors: type ? grammarErrors.filter(e => e.type === type).length : grammarErrors.length
+    });
+
+    // Filter errors by type if specified
     const errorsToApply = type 
       ? grammarErrors.filter(error => error.type === type)
       : grammarErrors;
-
-    console.log('🔧 ACCEPT ALL - Errors to apply:', errorsToApply.length);
 
     if (errorsToApply.length === 0) {
       console.log('🔧 ACCEPT ALL - No errors to apply');
@@ -239,269 +239,229 @@ export const EditorPage: React.FC = () => {
     }
 
     try {
-      // Get plain text for verification but work with HTML for actual changes
+      // Get plain text for position verification
       const currentPlainText = extractPlainTextFromHTML(content);
-
-      console.log('🔧 ACCEPT ALL - Starting with content:', {
-        originalHTMLLength: content.length,
-        plainTextLength: currentPlainText.length,
-        errorsToProcess: errorsToApply.length
-      });
-
-      // Prepare changes for batch application to HTML
-      const changes = errorsToApply
-        .filter(error => {
-          // Extract the original fragment that needs to be replaced
-          const originalFragment = error.context.text.substring(
-            error.context.highlightStart,
-            error.context.highlightEnd
-          );
-          
-          // Verify the fragment still exists
-          const fragmentExists = currentPlainText.includes(originalFragment);
-          if (!fragmentExists) {
-            console.warn('🔧 ACCEPT ALL - Fragment not found for error:', error.id, originalFragment);
-          }
-          
-          return fragmentExists && error.position && error.suggestions.length > 0;
-        })
-        .map(error => {
-          const originalFragment = error.context.text.substring(
-            error.context.highlightStart,
-            error.context.highlightEnd
-          );
-          
-          let suggestion = error.suggestions[0];
-          
-          // Apply capitalization preservation if needed
-          const fragmentIndex = currentPlainText.indexOf(originalFragment);
-          if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, originalFragment)) {
-            suggestion = capitalizeFirstLetter(suggestion);
-          }
-          
-          return {
-            plainTextStart: error.position.start,
-            plainTextEnd: error.position.end,
-            replacement: suggestion,
-            originalText: originalFragment,
-            errorId: error.id
-          };
-        });
-
-      console.log('🔧 ACCEPT ALL - Prepared changes:', changes.length);
-
-      // Apply all changes to HTML while preserving formatting
-      const result = applyMultipleTextChangesToHTML(content, changes);
       
-      console.log('🔧 ACCEPT ALL - Bulk application result:', {
-        appliedCount: result.appliedCount,
-        failedCount: result.failedCount,
-        totalAttempted: changes.length,
-        contentChanged: result.updatedHTML !== content
-      });
+      // Prepare all changes for batch application
+      const changes: Array<{
+        plainTextStart: number;
+        plainTextEnd: number;
+        replacement: string;
+        originalText?: string;
+      }> = [];
 
-      if (result.appliedCount > 0) {
-        // Update the content with formatted HTML (preserves all formatting!)
-        updateContent(result.updatedHTML);
-        
-        // Clear all processed errors
-        errorsToApply.forEach(error => {
-          dismissError(error.id);
-        });
-        
-        console.log('🔧 ACCEPT ALL - Successfully applied', result.appliedCount, 'suggestions with formatting preserved');
-      } else {
-        console.log('🔧 ACCEPT ALL - No suggestions were applied, clearing errors to prevent UI confusion');
-        // Clear errors even if no suggestions were applied to prevent UI confusion
-        errorsToApply.forEach(error => {
-          dismissError(error.id);
+      for (const error of errorsToApply) {
+        // Skip if no suggestions available
+        if (!error.suggestions || error.suggestions.length === 0) {
+          console.warn('🔧 ACCEPT ALL - No suggestions for error:', error.id);
+          continue;
+        }
+
+        // Use the first suggestion
+        const suggestion = error.suggestions[0];
+
+        // Extract the original fragment from error context
+        const originalFragment = error.context.text.substring(
+          error.context.highlightStart,
+          error.context.highlightEnd
+        );
+
+        // Check if the original fragment still exists in current text
+        if (!currentPlainText.includes(originalFragment)) {
+          console.warn('🔧 ACCEPT ALL - Original fragment not found for error:', error.id);
+          continue;
+        }
+
+        // Apply capitalization preservation if needed
+        let finalSuggestion = suggestion;
+        const fragmentIndex = currentPlainText.indexOf(originalFragment);
+        if (shouldPreserveCapitalization(currentPlainText, fragmentIndex, originalFragment)) {
+          finalSuggestion = capitalizeFirstLetter(suggestion);
+          console.log('🔧 ACCEPT ALL - Preserving capitalization for error:', error.id, {
+            original: originalFragment,
+            suggestion,
+            finalSuggestion
+          });
+        }
+
+        changes.push({
+          plainTextStart: error.position.start,
+          plainTextEnd: error.position.end,
+          replacement: finalSuggestion,
+          originalText: originalFragment
         });
       }
-    } catch (err) {
-      console.error('🔧 ACCEPT ALL - Error during bulk application:', err);
-      // Clear errors to prevent UI confusion even if there was an error
-      errorsToApply.forEach(error => {
-        dismissError(error.id);
+
+      console.log('🔧 ACCEPT ALL - Prepared changes:', {
+        totalChanges: changes.length,
+        changes: changes.map(c => ({
+          text: c.replacement,
+          position: `${c.plainTextStart}-${c.plainTextEnd}`
+        }))
       });
+
+      if (changes.length === 0) {
+        console.warn('🔧 ACCEPT ALL - No valid changes to apply');
+        return;
+      }
+
+      // Apply all changes using the batch function
+      const result = applyMultipleTextChangesToHTML(content, changes);
+      
+      console.log('🔧 ACCEPT ALL - Batch replacement result:', {
+        originalHTMLLength: content.length,
+        newHTMLLength: result.updatedHTML.length,
+        replacementMade: result.updatedHTML !== content,
+        appliedChanges: result.appliedCount,
+        failedChanges: result.failedCount
+      });
+
+      if (result.updatedHTML === content) {
+        console.warn('🔧 ACCEPT ALL - No changes were made to HTML content');
+        return;
+      }
+
+      // Update content with all changes applied
+      updateContent(result.updatedHTML);
+
+      // Dismiss all applied errors
+      errorsToApply.forEach(error => dismissError(error.id));
+
+      console.log('🔧 ACCEPT ALL - Successfully applied all suggestions:', {
+        appliedCount: result.appliedCount,
+        failedCount: result.failedCount
+      });
+
+    } catch (err) {
+      console.error('🔧 ACCEPT ALL - Error during batch application:', err);
+      // Don't dismiss errors if batch application fails
     }
   };
 
-  // AI suggestion handlers  
   const handleApplyAISuggestion = (suggestion: WritingSuggestion | AIGrammarSuggestion) => {
     console.log('🤖 Applying AI suggestion:', suggestion);
 
-    // Handle AI grammar errors differently
-    if ('isGrammarError' in suggestion && suggestion.isGrammarError) {
-      const originalError = suggestion.originalError;
+    try {
+      // Handle grammar error suggestions differently
+      if ('isGrammarError' in suggestion && suggestion.isGrammarError) {
+        const grammarSuggestion = suggestion as AIGrammarSuggestion;
+        handleAcceptSuggestion(grammarSuggestion.originalError.id, grammarSuggestion.suggestedText);
+        return;
+      }
+
+      // Handle regular AI suggestions
+      const currentPlainText = extractPlainTextFromHTML(content);
+      const writingSuggestion = suggestion as WritingSuggestion;
       
-      // Extract the original fragment from the error context
-      const originalFragment = originalError.context.text.substring(
-        originalError.context.highlightStart,
-        originalError.context.highlightEnd
-      );
-
-      console.log('🤖 AI Grammar suggestion details:', {
-        originalFragment,
-        suggestedText: suggestion.suggestedText,
-        currentContentLength: content.length,
-        htmlPreview: content.substring(0, 200)
-      });
-
-      // CRITICAL FIX: Work with HTML content to preserve formatting
-      // Do NOT convert to plain text as this strips all formatting
-      if (content.includes(originalFragment)) {
-        // Direct replacement in HTML content while preserving all formatting
-        const correctedContent = content.replace(originalFragment, suggestion.suggestedText);
-        console.log('🤖 Applied correction to HTML content, preserving all formatting');
-        updateContent(correctedContent);
-      } else {
-        console.warn('🤖 Original fragment not found in HTML content:', originalFragment);
-        console.log('🤖 Content preview:', content.substring(0, 200) + '...');
-      }
-    } else if (suggestion.position) {
-      // Regular AI suggestion with position - use HTML replacement if we have original text
-      if (suggestion.originalText) {
-        console.log('🔧 Using HTML replacement for AI suggestion:', {
-          originalText: suggestion.originalText,
-          suggestedText: suggestion.suggestedText,
-          htmlContentLength: content.length,
-          originalTextFound: content.includes(suggestion.originalText)
-        });
-        
-        // CRITICAL FIX: Work with HTML content to preserve formatting
-        if (content.includes(suggestion.originalText)) {
-          const updatedContent = content.replace(suggestion.originalText, suggestion.suggestedText);
-          console.log('🔧 HTML replacement successful, preserving all formatting');
-          updateContent(updatedContent);
-        } else {
-          console.warn('🔧 Original text not found in HTML content:', suggestion.originalText);
-          console.log('🔧 HTML content preview:', content.substring(0, 200) + '...');
+      // For AI suggestions, we need to find where to apply them
+      // This could be at cursor position, replacing selected text, etc.
+      // For now, we'll append to the end or replace if there's a clear context
+      
+      if (writingSuggestion.originalText) {
+        // Try to find and replace the original text
+        const originalIndex = currentPlainText.indexOf(writingSuggestion.originalText);
+        if (originalIndex !== -1) {
+          // Apply the replacement in HTML context
+          const updatedHTML = applyTextChangeToHTML(
+            content,
+            originalIndex,
+            originalIndex + writingSuggestion.originalText.length,
+            writingSuggestion.suggestedText
+          );
+          
+          updateContent(updatedHTML);
+          console.log('🤖 AI suggestion applied as replacement');
+          return;
         }
-      } else {
-        // Fallback: Only use plain text for position-based replacement when no original text
-        const plainText = content.replace(/<[^>]*>/g, ' ')
-          .replace(/&nbsp;/g, ' ')
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/\s+/g, ' ')
-          .trim();
-        
-        const beforeText = plainText.substring(0, suggestion.position.start);
-        const afterText = plainText.substring(suggestion.position.end);
-        const newContent = beforeText + suggestion.suggestedText + afterText;
-        updateContent(newContent);
       }
-    } else {
-      // Insert suggestion at current cursor position or append
-      updateContent(content + '\n\n' + suggestion.suggestedText);
+
+      // If we can't do a specific replacement, append the suggestion
+      // This might not be ideal for all cases, but it's a fallback
+      const updatedContent = content + '\n\n' + writingSuggestion.suggestedText;
+      updateContent(updatedContent);
+      console.log('🤖 AI suggestion appended to content');
+
+    } catch (err) {
+      console.error('🤖 Error applying AI suggestion:', err);
     }
   };
 
   const handleInsertAIContent = (generatedContent: string) => {
-    console.log('🤖 Inserting AI generated content:', generatedContent);
+    console.log('🤖 Inserting AI-generated content');
     
-    // Check if content is already HTML (starts with HTML tags) or markdown
-    const isHtmlContent = generatedContent.trim().startsWith('<');
-    
-    let processedContent: string;
-    
-    if (isHtmlContent) {
-      // Content is already HTML, use it directly without markdown conversion
-      processedContent = generatedContent;
-      console.log('🤖 Content detected as HTML, using directly');
-    } else {
-      // Convert markdown-style line breaks to HTML for TipTap editor
+    try {
+      // Convert markdown to basic HTML if needed
       const convertMarkdownToHTML = (markdownText: string): string => {
-        // Split into lines and process each line
-        const lines = markdownText.split('\n');
-        const htmlLines: string[] = [];
-        let inList = false;
-        
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          const trimmedLine = line.trim();
+        return markdownText
+          // Headers
+          .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gm, '<h1>$1</h1>')
           
-          if (trimmedLine === '') {
-            // Empty line - close any open list and add paragraph break
-            if (inList) {
-              htmlLines.push('</ul>');
-              inList = false;
-            }
-            htmlLines.push(''); // Will become paragraph break
-          } else if (trimmedLine.startsWith('### ')) {
-            // H3 header
-            if (inList) {
-              htmlLines.push('</ul>');
-              inList = false;
-            }
-            htmlLines.push(`<h3>${trimmedLine.substring(4)}</h3>`);
-          } else if (trimmedLine.startsWith('## ')) {
-            // H2 header
-            if (inList) {
-              htmlLines.push('</ul>');
-              inList = false;
-            }
-            htmlLines.push(`<h2>${trimmedLine.substring(3)}</h2>`);
-          } else if (trimmedLine.startsWith('# ')) {
-            // H1 header
-            if (inList) {
-              htmlLines.push('</ul>');
-              inList = false;
-            }
-            htmlLines.push(`<h1>${trimmedLine.substring(2)}</h1>`);
-          } else if (trimmedLine.startsWith('• ')) {
-            // Bullet point
-            if (!inList) {
-              htmlLines.push('<ul>');
-              inList = true;
-            }
-            htmlLines.push(`<li>${trimmedLine.substring(2)}</li>`);
-          } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
-            // Bold text (likely section labels)
-            if (inList) {
-              htmlLines.push('</ul>');
-              inList = false;
-            }
-            htmlLines.push(`<p><strong>${trimmedLine.substring(2, trimmedLine.length - 2)}</strong></p>`);
-          } else {
-            // Regular text
-            if (inList) {
-              htmlLines.push('</ul>');
-              inList = false;
-            }
-            htmlLines.push(`<p>${trimmedLine}</p>`);
-          }
-        }
-        
-        // Close any remaining open list
-        if (inList) {
-          htmlLines.push('</ul>');
-        }
-        
-        // Join lines and clean up
-        return htmlLines
-          .join('')
-          .replace(/<\/p><p>/g, '</p><p>')  // Ensure proper paragraph spacing
-          .replace(/><p><\/p></g, '>'); // Remove empty paragraphs between elements
+          // Bold and italic
+          .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          
+          // Lists
+          .replace(/^\* (.*$)/gm, '<li>$1</li>')
+          .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+          .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
+          
+          // Line breaks
+          .replace(/\n\n/g, '</p><p>')
+          .replace(/^(.+)$/gm, '<p>$1</p>')
+          
+          // Clean up empty paragraphs
+          .replace(/<p><\/p>/g, '')
+          .replace(/<p>(<[^>]+>)<\/p>/g, '$1');
       };
+
+      // Process the content based on its format
+      let processedContent = generatedContent;
       
-      processedContent = convertMarkdownToHTML(generatedContent);
-      console.log('🤖 Converted markdown content to HTML');
+      // Check if content looks like markdown
+      if (generatedContent.includes('**') || generatedContent.includes('##') || generatedContent.includes('* ')) {
+        processedContent = convertMarkdownToHTML(generatedContent);
+        console.log('🤖 Converted markdown to HTML');
+      } else {
+        // Wrap plain text in paragraphs
+        processedContent = generatedContent
+          .split('\n\n')
+          .map(paragraph => paragraph.trim())
+          .filter(paragraph => paragraph)
+          .map(paragraph => `<p>${paragraph}</p>`)
+          .join('');
+      }
+
+      // Insert at the end of current content
+      const updatedContent = content ? content + '\n\n' + processedContent : processedContent;
+      updateContent(updatedContent);
+      
+      console.log('🤖 AI content inserted successfully');
+    } catch (err) {
+      console.error('🤖 Error inserting AI content:', err);
+      // Fallback: insert as plain text
+      const updatedContent = content + '\n\n' + generatedContent;
+      updateContent(updatedContent);
     }
-    
-    console.log('🤖 Final processed content:', processedContent);
-    
-    // Insert the generated content with proper spacing
-    const newContent = content + (content ? '<br><br>' : '') + processedContent;
-    updateContent(newContent);
   };
 
   const handleReplaceContent = (newContent: string) => {
     console.log('🤖 Replacing entire content with corrected version');
     updateContent(newContent);
+  };
+
+  /**
+   * Handle document settings save
+   */
+  const handleDocumentSettingsSave = async (updates: {
+    title: string;
+    type: DocumentType;
+    description: string;
+    tags: string[];
+  }) => {
+    await updateDocumentMetadata(updates);
   };
 
   // Loading state
@@ -684,6 +644,7 @@ export const EditorPage: React.FC = () => {
               </button>
               
               <button
+                onClick={() => setShowDocumentSettings(true)}
                 className="p-2 rounded-lg hover:bg-slate-100 transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-900"
                 title="Document Settings"
               >
@@ -766,6 +727,14 @@ export const EditorPage: React.FC = () => {
           document={document}
         />
       )}
+
+      {/* Document Settings Modal */}
+      <DocumentSettingsModal
+        isOpen={showDocumentSettings}
+        document={document}
+        onClose={() => setShowDocumentSettings(false)}
+        onSave={handleDocumentSettingsSave}
+      />
     </div>
   );
 };

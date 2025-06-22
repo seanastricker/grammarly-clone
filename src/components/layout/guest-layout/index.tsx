@@ -1,49 +1,40 @@
 /**
- * @fileoverview Authenticated layout component
+ * @fileoverview Guest layout component
  * @author WordWise AI Team
  * @version 1.0.0
  * 
- * Layout component for authenticated pages.
- * TODO: Implement full auth layout with sidebar navigation and user menu.
+ * Layout component for guest users and home page.
+ * Includes header with sign in/sign up options and clickable home button.
  */
 
 import React from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 /**
- * Props for AuthLayout component
+ * Props for GuestLayout component
  */
-interface AuthLayoutProps {
+interface GuestLayoutProps {
   children: React.ReactNode;
 }
 
 /**
- * Authenticated layout component
+ * Guest layout component
  * 
- * Layout wrapper for authenticated pages like dashboard, editor, settings.
- * Provides consistent navigation and user interface for logged-in users.
+ * Layout wrapper for guest users and the home page.
+ * Provides consistent navigation with sign in/sign up options.
  * 
  * @component
  * @param children - Child components to render within the layout
  */
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+export const GuestLayout: React.FC<GuestLayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleHomeClick = () => {
     navigate('/');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
   };
 
   const handleSignIn = () => {
@@ -58,14 +49,24 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
     navigate('/dashboard');
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   const isGuest = user?.isGuest;
   const isAuthenticated = user && !isGuest;
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Auth header/navigation */}
+      {/* Header */}
       <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          {/* Logo/Home button */}
           <button
             onClick={handleHomeClick}
             className="font-bold text-xl text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer"
@@ -111,7 +112,6 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
                   size="sm"
                   className="text-slate-700 hover:text-slate-900"
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
               </>
@@ -176,4 +176,4 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   );
 };
 
-AuthLayout.displayName = 'AuthLayout'; 
+GuestLayout.displayName = 'GuestLayout'; 

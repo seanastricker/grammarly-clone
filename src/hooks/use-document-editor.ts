@@ -9,7 +9,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from './use-auth';
-import type { Document } from '@/types/document';
+import type { Document, DocumentType, UpdateDocumentData } from '@/types/document';
 import * as documentService from '@/services/documents';
 
 interface DocumentEditorState {
@@ -197,6 +197,52 @@ export const useDocumentEditor = () => {
   }, [state.document, user, content, calculateStats]);
 
   /**
+   * Update document metadata (title, type, description, tags)
+   */
+  const updateDocumentMetadata = useCallback(async (updates: {
+    title: string;
+    type: DocumentType;
+    description: string;
+    tags: string[];
+  }) => {
+    if (!state.document || !user) return;
+
+    setState(prev => ({ ...prev, isSaving: true, error: null }));
+
+    try {
+      const updateData: UpdateDocumentData = {
+        title: updates.title,
+        type: updates.type,
+        description: updates.description,
+        tags: updates.tags
+      };
+
+      const updatedDocument = await documentService.updateDocument(
+        state.document.id, 
+        user.id, 
+        updateData
+      );
+
+      setState(prev => ({
+        ...prev,
+        isSaving: false,
+        document: updatedDocument,
+        lastSaved: new Date()
+      }));
+
+      return updatedDocument;
+    } catch (error) {
+      console.error('Error updating document metadata:', error);
+      setState(prev => ({
+        ...prev,
+        isSaving: false,
+        error: 'Failed to update document settings'
+      }));
+      throw error;
+    }
+  }, [state.document, user]);
+
+  /**
    * Update content and trigger auto-save
    */
   const updateContent = useCallback((newContent: string) => {
@@ -283,6 +329,7 @@ export const useDocumentEditor = () => {
     // Actions
     updateContent,
     saveDocument: handleSave,
+    updateDocumentMetadata,
     goBack: handleBack,
     
     // Computed

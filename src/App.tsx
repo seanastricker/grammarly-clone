@@ -11,7 +11,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 
 // Page components
-import { LandingPage } from '@/components/pages/landing';
+import { HomePage } from '@/components/pages/home/index';
 import { LoginPage } from '@/components/pages/auth/login';
 import { SignupPage } from '@/components/pages/auth/signup';
 import { DashboardPage } from '@/components/pages/dashboard';
@@ -19,12 +19,12 @@ import { EditorPage } from '@/components/pages/editor';
 import { SettingsPage } from '@/components/pages/settings';
 
 // Layout components
-import { PublicLayout } from '@/components/layout/public-layout';
+import { GuestLayout } from '@/components/layout/guest-layout';
 import { AuthLayout } from '@/components/layout/auth-layout';
 
 /**
  * Protected route wrapper component
- * Redirects to login if user is not authenticated
+ * Allows guests and authenticated users, redirects unauthenticated users to home
  */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -34,6 +34,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   return user ? <>{children}</> : <Navigate to="/" replace />;
+}
+
+/**
+ * Auth-only route wrapper component
+ * Redirects guests and unauthenticated users to login
+ */
+function AuthOnlyRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // TODO: Replace with proper loading component
+  }
+
+  // Allow only authenticated (non-guest) users
+  const isAuthenticated = user && !user.isGuest;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 /**
@@ -49,26 +65,18 @@ function App() {
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+      {/* Home page - available to everyone */}
+      <Route path="/" element={<HomePage />} />
       
-      {/* Authentication routes */}
+      {/* Authentication routes - redirect authenticated users to dashboard */}
       <Route path="/login" element={
-        user ? <Navigate to="/dashboard" replace /> : (
-          <PublicLayout>
-            <LoginPage />
-          </PublicLayout>
-        )
+        user && !user.isGuest ? <Navigate to="/dashboard" replace /> : <LoginPage />
       } />
       <Route path="/signup" element={
-        user ? <Navigate to="/dashboard" replace /> : (
-          <PublicLayout>
-            <SignupPage />
-          </PublicLayout>
-        )
+        user && !user.isGuest ? <Navigate to="/dashboard" replace /> : <SignupPage />
       } />
       
-      {/* Protected application routes */}
+      {/* Application routes - available to guests and authenticated users */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <AuthLayout>
@@ -83,12 +91,14 @@ function App() {
           </AuthLayout>
         </ProtectedRoute>
       } />
+      
+      {/* Auth-only routes - require full authentication */}
       <Route path="/settings" element={
-        <ProtectedRoute>
+        <AuthOnlyRoute>
           <AuthLayout>
             <SettingsPage />
           </AuthLayout>
-        </ProtectedRoute>
+        </AuthOnlyRoute>
       } />
       
       {/* Fallback route */}
