@@ -26,8 +26,8 @@ class Open5eApiService {
       params.append('size', filters.size);
     }
     
-    // Limit results for performance
-    params.append('limit', '50');
+    // Set a very high limit to get all available monsters
+    params.append('limit', '1000');
     
     return `${OPEN5E_API_BASE}/monsters/?${params.toString()}`;
   }
@@ -37,22 +37,45 @@ class Open5eApiService {
       const url = this.buildSearchUrl(filters);
       console.log('🌐 Fetching monsters from:', url);
       
-      const response = await fetch(url, {
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'DungeonMaster-AI-Assistant/1.0'
-        }
-      });
+      let allResults: Open5eMonster[] = [];
+      let nextUrl: string | null = url;
       
-      if (!response.ok) {
-        console.warn(`Open5e API responded with status: ${response.status}`);
-        throw new Error(`Open5e API error: ${response.status}`);
+      // Fetch all pages to get complete results
+      while (nextUrl) {
+        const response = await fetch(nextUrl, {
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'DungeonMaster-AI-Assistant/1.0'
+          }
+        });
+        
+        if (!response.ok) {
+          console.warn(`Open5e API responded with status: ${response.status}`);
+          throw new Error(`Open5e API error: ${response.status}`);
+        }
+        
+        const data: Open5eApiResponse = await response.json();
+        allResults = allResults.concat(data.results);
+        nextUrl = data.next;
+        
+        console.log(`🌐 Fetched ${data.results.length} monsters, total so far: ${allResults.length}`);
+        
+        // Safety break to prevent infinite loops
+        if (allResults.length > 5000) {
+          console.warn('⚠️ Hit safety limit of 5000 monsters, stopping pagination');
+          break;
+        }
       }
       
-      const data: Open5eApiResponse = await response.json();
-      console.log('🌐 Successfully fetched monsters:', data.results?.length || 0);
-      return data;
+      console.log('🌐 Successfully fetched all monsters:', allResults.length);
+      
+      return {
+        count: allResults.length,
+        next: null,
+        previous: null,
+        results: allResults
+      };
     } catch (error) {
       console.error('❌ Error fetching monsters from Open5e:', error);
       
@@ -288,7 +311,7 @@ class Open5eApiService {
       const response = await this.searchMonsters({});
       if (response.results && response.results.length > 0) {
         console.log('🌐 Successfully loaded common monsters from API');
-        return response.results.slice(0, 10); // Return first 10 as "common"
+        return response.results; // Return all monsters instead of limiting to 10
       }
       
       // If API fails, fall back to mock data

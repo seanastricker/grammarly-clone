@@ -41,7 +41,7 @@ export const MonsterReSkinWidget: React.FC<MonsterReSkinWidgetProps> = ({
       };
       
       const response = await open5eApi.searchMonsters(filters);
-      setSearchResults(response.results.slice(0, 20)); // Limit to 20 results
+      setSearchResults(response.results); // Remove limit to show all matching results
       setIsUsingFallbackData(response.results.length > 0 && response.results[0].slug === 'goblin'); // Detect if using mock data
     } catch (err) {
       setError('Failed to search monsters. Please try again.');
@@ -142,7 +142,7 @@ export const MonsterReSkinWidget: React.FC<MonsterReSkinWidgetProps> = ({
           disabled={isLoading}
           className="w-full"
         >
-          {isLoading ? 'Loading...' : 'Browse Common Monsters'}
+          {isLoading ? 'Loading...' : 'Browse All Monsters'}
         </Button>
         
         {error && (
@@ -160,7 +160,13 @@ export const MonsterReSkinWidget: React.FC<MonsterReSkinWidgetProps> = ({
           </div>
         )}
         
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        {searchResults.length > 0 && (
+          <div className="text-sm text-gray-600 px-1">
+            Found {searchResults.length} monster{searchResults.length !== 1 ? 's' : ''}
+          </div>
+        )}
+        
+        <div className="space-y-2 max-h-[40rem] overflow-y-auto">
           {searchResults.map((monster) => (
             <Card 
               key={monster.slug} 
