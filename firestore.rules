@@ -3,16 +3,25 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Rules for the 'users' collection
     match /users/{userId} {
-      // A user can read or update their own profile.
       allow read, update: if request.auth != null && request.auth.uid == userId;
-      // A user can create their own profile, ensuring the document ID matches their UID.
       allow create: if request.auth != null && request.resource.id == request.auth.uid;
     }
 
-    // Rules for user-owned documents
-    match /documents/{userId}/{document=**} {
-        // Allow users to perform any action on their own documents.
-        allow read, write, create, delete: if request.auth != null && request.auth.uid == userId;
+    // Rules for the 'documents' collection, which has a flat structure.
+    match /documents/{documentId} {
+      // Users can read documents they own. This works for direct gets and queries
+      // that filter by userId.
+      allow read: if request.auth.uid == resource.data.userId;
+
+      // Users can create documents for themselves.
+      allow create: if request.auth.uid == request.resource.data.userId;
+
+      // Users can update their own documents, but cannot change the userId.
+      allow update: if request.auth.uid == resource.data.userId
+                    && request.resource.data.userId == resource.data.userId;
+      
+      // Users can delete their own documents.
+      allow delete: if request.auth.uid == resource.data.userId;
     }
   }
 } 
